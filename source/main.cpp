@@ -28,7 +28,7 @@ int main(int argc, char* args[])
 	const uint32_t height = 480;
 
 	SDL_Window* pWindow = SDL_CreateWindow(
-		"DirectX - ***Insert Name/Class***",
+		"DualRasterizer - ***Dumoulin Glenn/2DAE15***",
 		SDL_WINDOWPOS_UNDEFINED,
 		SDL_WINDOWPOS_UNDEFINED,
 		width, height, 0);
@@ -56,8 +56,52 @@ int main(int argc, char* args[])
 				isLooping = false;
 				break;
 			case SDL_KEYUP:
-				//Test for a key
-				//if (e.key.keysym.scancode == SDL_SCANCODE_X)
+				//Shared
+				if (e.key.keysym.scancode == SDL_SCANCODE_F1) //Toggle software/hardware
+					pRenderer->ToggleIsUsingDirectX();
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F2) //Toggle rotation
+					pRenderer->ToggleShouldRotate();
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F9) //Cycle cull mode (back/front/none)
+					pRenderer->CycleCullMode();
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F10) //Toggle uniform color
+					pRenderer->ToggleIsUsingUniformClearColor();
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_F11) //Toggle print FPS
+					pRenderer->ToggleShouldPrintFPS();
+
+				if (pRenderer->GetIsUsingDirectX()) //Hardware only
+				{
+					if (e.key.keysym.scancode == SDL_SCANCODE_F3) //Toggle fireFX mesh
+						pRenderer->ToggleShouldRenderFireFX();
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_F4) //Cycle texture sampling state (point/linear/anisotropic)
+						pRenderer->CycleSamplerState();
+				}
+				else //Software only
+				{
+					if (e.key.keysym.scancode == SDL_SCANCODE_F5) //Cycle shading mode (combined/observedArea/diffuse/specular)
+						pRenderer->CycleShadingMode();
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_F6) //Toggle nomral map
+						pRenderer->ToggleIsUsingNormalMap();
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_F7) //Toggle depth buffer
+						pRenderer->ToggleShouldShowDepthBuffer();
+
+					if (e.key.keysym.scancode == SDL_SCANCODE_F8) //Toggle bounding box
+						pRenderer->ToggleShouldShowBoundingBox();
+				}
+
+				//Extra
+				if (e.key.keysym.scancode == SDL_SCANCODE_C) //Print controls/extra controls
+					pRenderer->PrintControls();
+
+				if (e.key.keysym.scancode == SDL_SCANCODE_X) //Reset console
+					pRenderer->ResetConsole();
+
 				break;
 			default: ;
 			}
@@ -75,7 +119,11 @@ int main(int argc, char* args[])
 		if (printTimer >= 1.f)
 		{
 			printTimer = 0.f;
-			std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+			if (pRenderer->GetShouldPrintFPS())
+			{
+				//std::cout << "dFPS: " << pTimer->GetdFPS() << std::endl;
+				pRenderer->PrintFPS(pTimer->GetdFPS());
+			}
 		}
 	}
 	pTimer->Stop();

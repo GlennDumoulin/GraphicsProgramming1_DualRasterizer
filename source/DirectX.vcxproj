@@ -12,7 +12,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
-    <ProjectGuid>{62BA78F9-CC88-465F-AEDF-B7557B1D0F13}</ProjectGuid>
+    <ProjectGuid>{3AD21F29-2F76-481F-BDB6-4BABCCED4583}</ProjectGuid>
     <RootNamespace>RayTracer</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>DirectX</ProjectName>
@@ -79,6 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ColorRGB.h" />
+    <ClInclude Include="DataTypes.h" />
     <ClInclude Include="MathHelpers.h" />
     <ClInclude Include="Matrix.h" />
     <ClInclude Include="pch.h" />
