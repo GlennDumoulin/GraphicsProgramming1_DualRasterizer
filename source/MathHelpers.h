@@ -52,6 +52,13 @@ namespace dae
 		return v;
 	}
 
+	inline float Remap(const float value, const float min, const float max)
+	{
+		const float clampedValue{ std::clamp(value, min, max) };
+
+		return (clampedValue - min) / (max - min);
+	}
+
 	inline float Saturate(const float v)
 	{
 		if (v < 0.f) return 0.f;

@@ -6,8 +6,8 @@ namespace dae
 	//Enums
 	enum class PrimitiveTopology
 	{
-		TriangleList,
-		TriangleStrip
+		TRIANGLE_LIST,
+		TRIANGLE_STRIP
 	};
 
 	enum class CullMode
@@ -19,10 +19,10 @@ namespace dae
 
 	enum class ShadingMode
 	{
-		ObservedArea,
-		Diffuse,
-		Specular,
-		Combined,
+		OBSERVED_AREA,
+		DIFFUSE,
+		SPECULAR,
+		COMBINED,
 	};
 
 	enum class SamplerState

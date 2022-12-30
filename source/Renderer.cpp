@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "Renderer.h"
 #include "Camera.h"
+#include "Mesh.h"
+#include "Utils.h"
 
 namespace dae
 {
@@ -34,6 +36,16 @@ namespace dae
 		m_pCamera = new Camera{};
 		m_pCamera->Initialize(static_cast<float>(m_Width) / m_Height, 45.f);
 
+		//Initialize vehicle mesh and textures
+		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx");
+
+		//...vehicle textures
+
+		//Initialize fireFX mesh and textures
+		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx");
+
+		//...fireFX textures
+
 		//Create Sampler State
 		InitializeSamplerState();
 
@@ -62,11 +74,32 @@ namespace dae
 
 		//Shared
 		delete m_pCamera;
+		delete m_pVehicle;
+		delete m_pFireFX;
 	}
 
 	void Renderer::Update(const Timer* pTimer)
 	{
 		m_pCamera->Update(pTimer);
+
+		//Handle Mesh Rotation
+		if (m_ShouldRotate)
+		{
+			m_pVehicle->RotateY(m_MeshRotateSpeed * pTimer->GetElapsed());
+			m_pFireFX->RotateY(m_MeshRotateSpeed * pTimer->GetElapsed());
+		}
+
+		//TODO: Fix Update Matrices functions
+		//Handle Updating Matrices
+		if (m_IsUsingDirectX)
+		{
+			m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
+			m_pFireFX->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
+		}
+		else
+		{
+			m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
+		}
 	}
 
 	void Renderer::Render() const
@@ -102,11 +135,8 @@ namespace dae
 		m_pDeviceContext->ClearDepthStencilView(m_pDepthStencilView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.f, 0);
 
 		//2. Set Pipeline + Invoke DrawCalls (==Render)
-		/*std::for_each(m_pMeshes.begin(), m_pMeshes.end(), [=](Mesh* pMesh)
-			{
-				pMesh->Render(m_pDeviceContext);
-			}
-		);*/
+		m_pVehicle->RenderDirectX(m_pDeviceContext);
+		m_pFireFX->RenderDirectX(m_pDeviceContext);
 
 		//3. Present Backbuffer (Swap)
 		m_pSwapChain->Present(0, 0);
@@ -123,42 +153,35 @@ namespace dae
 		SDL_LockSurface(m_pBackBuffer);
 
 		//Loop Over All Meshes
-		/*for (Mesh& mesh : m_MeshesWorld)
-		{
-			//Calculate SCREEN Space Vertices
-			VertexTransformationFunction(mesh);
-
-			//Handle Primitive Topology Type
-			switch (mesh.primitiveTopology)
-			{
-			case PrimitiveTopology::TriangleList:
-			{
-				//Loop Over All Triangles
-				for (size_t verticeIdx{}; verticeIdx < mesh.indices.size(); verticeIdx += 3)
-				{
-					RenderTriangle(verticeIdx, mesh);
-				}
-
-				break;
-			}
-
-			case PrimitiveTopology::TriangleStrip:
-			{
-				//Loop Over All Triangles
-				for (size_t verticeIdx{}; verticeIdx < mesh.indices.size() - 2; ++verticeIdx)
-				{
-					RenderTriangle(verticeIdx, mesh, verticeIdx % 2);
-				}
-
-				break;
-			}
-			}
-		}*/
+		m_pVehicle->RenderSoftware();
+		m_pFireFX->RenderSoftware();
 
 		//Update SDL Surface
 		SDL_UnlockSurface(m_pBackBuffer);
 		SDL_BlitSurface(m_pBackBuffer, 0, m_pFrontBuffer, 0);
 		SDL_UpdateWindowSurface(m_pWindow);
+	}
+
+	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation, const Vector3& rotation, const Vector3& scale)
+	{
+		Mesh* pMesh{ nullptr };
+
+		std::vector<Vertex> vertices{};
+		std::vector<uint32_t> indices{};
+
+		if (!Utils::ParseOBJ(filename, vertices, indices))
+		{
+			std::cout << "Failed to parseObj!";
+			return pMesh;
+		}
+
+		pMesh = new Mesh{ m_pDevice, effectType, effectFilename, vertices, indices };
+
+		pMesh->SetTranslation(translation);
+		pMesh->SetRotation(rotation);
+		pMesh->SetScale(scale);
+
+		return pMesh;
 	}
 
 #pragma region Software Functions
@@ -337,11 +360,8 @@ namespace dae
 		if (FAILED(result))
 			return;
 
-		/*std::for_each(m_pMeshes.begin(), m_pMeshes.end(), [=](Mesh* pMesh)
-			{
-				pMesh->SetSampler(m_pSamplerState);
-			}
-		);*/
+		m_pVehicle->SetSampler(m_pSamplerState);
+		m_pFireFX->SetSampler(m_pSamplerState);
 	}
 #pragma endregion
 
@@ -428,25 +448,25 @@ namespace dae
 	}
 	void Renderer::CycleShadingMode()
 	{
-		m_ShadingMode = static_cast<ShadingMode>((static_cast<int>(m_ShadingMode) + 1) % (static_cast<int>(ShadingMode::Combined) + 1));
+		m_ShadingMode = static_cast<ShadingMode>((static_cast<int>(m_ShadingMode) + 1) % (static_cast<int>(ShadingMode::COMBINED) + 1));
 		
 		SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
 		std::cout << "**(SOFTWARE) Shading Mode = ";
 		switch (m_ShadingMode)
 		{
-		case ShadingMode::ObservedArea:
+		case ShadingMode::OBSERVED_AREA:
 			std::cout << "Observed Area\n";
 			break;
 
-		case ShadingMode::Diffuse:
+		case ShadingMode::DIFFUSE:
 			std::cout << "Diffuse\n";
 			break;
 
-		case ShadingMode::Specular:
+		case ShadingMode::SPECULAR:
 			std::cout << "Specular\n";
 			break;
 
-		case ShadingMode::Combined:
+		case ShadingMode::COMBINED:
 			std::cout << "Combined\n";
 			break;
 		}
@@ -686,7 +706,7 @@ namespace dae
 		std::cout << "  [F5]\tCycle Shading Mode (";
 		switch (m_ShadingMode)
 		{
-		case ShadingMode::ObservedArea:
+		case ShadingMode::OBSERVED_AREA:
 			std::cout << "OBSERVED AREA/";
 			SetConsoleTextAttribute(m_hConsole, m_DefaultColor);
 			std::cout << "DIFFUSE";
@@ -701,7 +721,7 @@ namespace dae
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
 			break;
 
-		case ShadingMode::Diffuse:
+		case ShadingMode::DIFFUSE:
 			SetConsoleTextAttribute(m_hConsole, m_DefaultColor);
 			std::cout << "OBSERVED AREA";
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
@@ -715,7 +735,7 @@ namespace dae
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
 			break;
 
-		case ShadingMode::Specular:
+		case ShadingMode::SPECULAR:
 			SetConsoleTextAttribute(m_hConsole, m_DefaultColor);
 			std::cout << "OBSERVED AREA";
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
@@ -729,7 +749,7 @@ namespace dae
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);
 			break;
 
-		case ShadingMode::Combined:
+		case ShadingMode::COMBINED:
 			SetConsoleTextAttribute(m_hConsole, m_DefaultColor);
 			std::cout << "OBSERVED AREA";
 			SetConsoleTextAttribute(m_hConsole, m_SoftwareColor);

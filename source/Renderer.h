@@ -6,6 +6,7 @@ struct SDL_Surface;
 namespace dae
 {
 	class Camera;
+	class Mesh;
 
 	class Renderer final
 	{
@@ -65,6 +66,9 @@ namespace dae
 
 		Camera* m_pCamera{};
 
+		Mesh* m_pVehicle{};
+		Mesh* m_pFireFX{};
+
 		const float m_MeshRotateSpeed{ 45.f };
 
 		bool m_IsInitialized{ false };
@@ -81,7 +85,7 @@ namespace dae
 
 		//Cycle variables
 		SamplerState m_SamplerState{ SamplerState::POINT }; //F4
-		ShadingMode m_ShadingMode{ ShadingMode::Combined }; //F5
+		ShadingMode m_ShadingMode{ ShadingMode::COMBINED }; //F5
 		CullMode m_CullMode{ CullMode::BACK }; //F9
 
 		void PrintSettings() const;
@@ -89,6 +93,8 @@ namespace dae
 
 		void RenderDirectX() const;
 		void RenderSoftware() const;
+
+		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One);
 
 		//Software
 		SDL_Surface* m_pFrontBuffer{ nullptr };

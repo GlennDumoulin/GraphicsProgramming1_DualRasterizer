@@ -4,6 +4,7 @@ namespace dae
 {
 	struct Vector2;
 	struct Vector4;
+
 	struct Vector3
 	{
 		float x{};
@@ -49,6 +50,7 @@ namespace dae
 		static const Vector3 UnitY;
 		static const Vector3 UnitZ;
 		static const Vector3 Zero;
+		static const Vector3 One;
 	};
 
 	//Global Operators
