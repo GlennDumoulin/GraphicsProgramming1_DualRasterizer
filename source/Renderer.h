@@ -5,6 +5,8 @@ struct SDL_Surface;
 
 namespace dae
 {
+	class Camera;
+
 	class Renderer final
 	{
 	public:
@@ -23,7 +25,7 @@ namespace dae
 		void PrintControls() const;
 		void ResetConsole() const;
 
-#pragma region Toggle & Cycle functions
+#pragma region Toggle & Cycle Functions
 		void ToggleIsUsingDirectX(); //F1
 		void ToggleShouldRotate(); //F2
 		void ToggleShouldRenderFireFX(); //F3
@@ -38,24 +40,32 @@ namespace dae
 		void CycleCullMode(); //F9
 #pragma endregion
 
-#pragma region Getter functions
+#pragma region Getter Functions
 		bool GetIsUsingDirectX() const { return m_IsUsingDirectX; }
 		bool GetShouldPrintFPS() const { return m_ShouldPrintFPS; }
 #pragma endregion
 
 	private:
 		SDL_Window* m_pWindow{};
+		const HANDLE m_hConsole{};
 		
-		//Console variables
-		HANDLE m_hConsole{};
-		WORD m_DefaultColor{ FOREGROUND_INTENSITY };
-		WORD m_SharedColor{ FOREGROUND_RED | FOREGROUND_GREEN };
-		WORD m_HardwareColor{ FOREGROUND_GREEN };
-		WORD m_SoftwareColor{ FOREGROUND_BLUE | FOREGROUND_RED };
-		WORD m_ExtraColor{ FOREGROUND_BLUE | FOREGROUND_INTENSITY };
+		//Color variables
+		const WORD m_DefaultColor{ FOREGROUND_INTENSITY };
+		const WORD m_SharedColor{ FOREGROUND_RED | FOREGROUND_GREEN };
+		const WORD m_HardwareColor{ FOREGROUND_GREEN };
+		const WORD m_SoftwareColor{ FOREGROUND_BLUE | FOREGROUND_RED };
+		const WORD m_ExtraColor{ FOREGROUND_BLUE | FOREGROUND_INTENSITY };
+
+		const ColorRGB m_UniformClearColor{ .1f, .1f, .1f };
+		const ColorRGB m_HardwareClearColor{ .39f, .59f, .93f };
+		const ColorRGB m_SoftwareClearColor{ .39f, .39f, .39f };
 
 		int m_Width{};
 		int m_Height{};
+
+		Camera* m_pCamera{};
+
+		const float m_MeshRotateSpeed{ 45.f };
 
 		bool m_IsInitialized{ false };
 
@@ -80,8 +90,30 @@ namespace dae
 		void RenderDirectX() const;
 		void RenderSoftware() const;
 
+		//Software
+		SDL_Surface* m_pFrontBuffer{ nullptr };
+		SDL_Surface* m_pBackBuffer{ nullptr };
+		uint32_t* m_pBackBufferPixels{};
+
+		float* m_pDepthBufferPixels{};
+
+		void ClearBackground() const;
+		void ResetDepthBuffer() const;
+
 		//DIRECTX
+		ID3D11Device* m_pDevice{};
+		ID3D11DeviceContext* m_pDeviceContext{};
+		IDXGISwapChain* m_pSwapChain{};
+		ID3D11Texture2D* m_pDepthStencilBuffer{};
+		ID3D11DepthStencilView* m_pDepthStencilView{};
+		ID3D11Resource* m_pRenderTargetBuffer{};
+		ID3D11RenderTargetView* m_pRenderTargetView{};
+		ID3D11SamplerState* m_pSamplerState{};
+
+		D3D11_SAMPLER_DESC m_SamplerDesc{};
+
 		HRESULT InitializeDirectX();
-		//...
+		void InitializeSamplerState();
+		void SetSamplerState();
 	};
 }
