@@ -3,7 +3,7 @@
 namespace dae
 {
 	class Texture;
-	//class Effect;
+	class Effect;
 
 	class Mesh final
 	{
@@ -54,7 +54,7 @@ namespace dae
 
 		//DirectX
 		EffectType m_EffectType{};
-		//Effect* m_pEffect{};
+		Effect* m_pEffect{};
 		ID3DX11EffectTechnique* m_pTechnique{};
 
 		ID3D11Buffer* m_pVertexBuffer{};

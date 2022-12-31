@@ -17,7 +17,7 @@ namespace dae
 		//Create Buffers
 		m_pFrontBuffer = SDL_GetWindowSurface(pWindow);
 		m_pBackBuffer = SDL_CreateRGBSurface(0, m_Width, m_Height, 32, 0, 0, 0, 0);
-		m_pBackBufferPixels = (uint32_t*)m_pBackBuffer->pixels;
+		m_pBackBufferPixels = static_cast<uint32_t*>(m_pBackBuffer->pixels);
 
 		m_pDepthBufferPixels = new float[m_Width * m_Height];
 
@@ -37,8 +37,11 @@ namespace dae
 		m_pCamera = new Camera{};
 		m_pCamera->Initialize(static_cast<float>(m_Width) / m_Height, 45.f);
 
+		//Cache meshes translation
+		const Vector3 translation{ 0.f, 0.f, 50.f };
+
 		//Initialize vehicle mesh and textures
-		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx");
+		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx", translation);
 
 		m_pVehicle->SetDiffuseMap(Texture::LoadFromFile("Resources/vehicle_diffuse.png", m_pDevice));
 		m_pVehicle->SetNormalMap(Texture::LoadFromFile("Resources/vehicle_normal.png", m_pDevice));
@@ -46,7 +49,7 @@ namespace dae
 		m_pVehicle->SetGlossinessMap(Texture::LoadFromFile("Resources/vehicle_gloss.png", m_pDevice));
 
 		//Initialize fireFX mesh and textures
-		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx");
+		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx", translation);
 
 		m_pFireFX->SetDiffuseMap(Texture::LoadFromFile("Resources/fireFX_diffuse.png", m_pDevice));
 
@@ -135,7 +138,7 @@ namespace dae
 
 		//2. Set Pipeline + Invoke DrawCalls (==Render)
 		m_pVehicle->RenderDirectX(m_pDeviceContext);
-		m_pFireFX->RenderDirectX(m_pDeviceContext);
+		if (m_ShouldRenderFireFX) m_pFireFX->RenderDirectX(m_pDeviceContext);
 
 		//3. Present Backbuffer (Swap)
 		m_pSwapChain->Present(0, 0);
@@ -151,9 +154,8 @@ namespace dae
 		//Lock BackBuffer
 		SDL_LockSurface(m_pBackBuffer);
 
-		//Loop Over All Meshes
+		//Render Mesh
 		m_pVehicle->RenderSoftware();
-		m_pFireFX->RenderSoftware();
 
 		//Update SDL Surface
 		SDL_UnlockSurface(m_pBackBuffer);
@@ -163,7 +165,7 @@ namespace dae
 
 	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation, const Vector3& rotation, const Vector3& scale)
 	{
-		Mesh* pMesh{ nullptr };
+		Mesh* pMesh{};
 
 		std::vector<Vertex> vertices{};
 		std::vector<uint32_t> indices{};

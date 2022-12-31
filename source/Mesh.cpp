@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "Mesh.h"
 #include "Texture.h"
-//#include "Effect.h"
-//#include "EffectStandard.h"
-//#include "EffectTransparent.h"
+#include "Effect.h"
+#include "EffectStandard.h"
+#include "EffectTransparent.h"
 
 namespace dae
 {
@@ -17,19 +17,20 @@ namespace dae
 		{
 		case EffectType::STANDARD:
 		{
-			//m_pEffect = new EffectStandard{ pDevice, effectFilename };
+			m_pEffect = new EffectStandard{ pDevice, effectFilename };
 			break;
 		}
 
 		case EffectType::TRANSPARENCY:
 		{
-			//m_pEffect = new EffectTransparent{ pDevice, effectFilename };
+			m_pEffect = new EffectTransparent{ pDevice, effectFilename };
 			break;
 		}
 		}
 
 		//Get Technique from Effect
-		//m_pTechnique = m_pEffect->GetTechnique();
+		if (m_pEffect != nullptr)
+			m_pTechnique = m_pEffect->GetTechnique();
 
 		//Create layouts
 		if (FAILED(CreateLayouts(pDevice)))
@@ -50,7 +51,7 @@ namespace dae
 		if (m_pVertexBuffer)
 			m_pVertexBuffer->Release();
 
-		//delete m_pEffect;
+		delete m_pEffect;
 
 		delete m_pDiffuseTexture;
 		delete m_pNormalTexture;
@@ -60,8 +61,7 @@ namespace dae
 
 	HRESULT Mesh::CreateLayouts(ID3D11Device* pDevice)
 	{
-		//return m_pEffect->LoadInputLayout(pDevice, &m_pInputLayout);
-		return S_FALSE;
+		return m_pEffect->LoadInputLayout(pDevice, &m_pInputLayout);
 	}
 	HRESULT Mesh::CreateBuffers(ID3D11Device* pDevice)
 	{
@@ -120,13 +120,13 @@ namespace dae
 		pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		//5. Draw
-		/*D3DX11_TECHNIQUE_DESC techDesc{};
+		D3DX11_TECHNIQUE_DESC techDesc{};
 		m_pTechnique->GetDesc(&techDesc);
 		for (UINT p{ 0 }; p < techDesc.Passes; ++p)
 		{
 			m_pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
 			pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
-		}*/
+		}
 	}
 	void Mesh::RenderSoftware() const
 	{
@@ -180,26 +180,26 @@ namespace dae
 
 	void Mesh::SetSampler(ID3D11SamplerState* pSampler)
 	{
-		//m_pEffect->SetSampler(pSampler);
+		m_pEffect->SetSampler(pSampler);
 	}
 
 	void Mesh::SetWorldViewProjMatrix(const Matrix& viewMatrix, const Matrix& projMatrix)
 	{
-		//m_pEffect->SetWorldViewProjMatrix(GetWorldMatrix() * viewMatrix * projMatrix);
+		m_pEffect->SetWorldViewProjMatrix(GetWorldMatrix() * viewMatrix * projMatrix);
 	}
 	void Mesh::SetWorldMatrix()
 	{
-		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetWorldMatrix(GetWorldMatrix());*/
+			pTempEffect->SetWorldMatrix(GetWorldMatrix());
 	}
 	void Mesh::SetViewInverseMatrix(const Matrix& viewInverseMatrix)
 	{
-		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetViewInverseMatrix(viewInverseMatrix);*/
+			pTempEffect->SetViewInverseMatrix(viewInverseMatrix);
 	}
 	void Mesh::UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix)
 	{
@@ -229,7 +229,7 @@ namespace dae
 		delete m_pDiffuseTexture;
 		m_pDiffuseTexture = pDiffuseTexture;
 
-		//m_pEffect->SetDiffuseMap(pDiffuseTexture);
+		m_pEffect->SetDiffuseMap(pDiffuseTexture);
 	}
 	void Mesh::SetNormalMap(Texture* pNormalTexture)
 	{
@@ -237,10 +237,10 @@ namespace dae
 		delete m_pNormalTexture;
 		m_pNormalTexture = pNormalTexture;
 
-		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetNormalMap(pNormalTexture);*/
+			pTempEffect->SetNormalMap(pNormalTexture);
 	}
 	void Mesh::SetSpecularMap(Texture* pSpecularTexture)
 	{
@@ -248,10 +248,10 @@ namespace dae
 		delete m_pSpecularTexture;
 		m_pSpecularTexture = pSpecularTexture;
 
-		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetSpecularMap(pSpecularTexture);*/
+			pTempEffect->SetSpecularMap(pSpecularTexture);
 	}
 	void Mesh::SetGlossinessMap(Texture* pGlossinessTexture)
 	{
@@ -259,9 +259,9 @@ namespace dae
 		delete m_pGlossinessTexture;
 		m_pGlossinessTexture = pGlossinessTexture;
 
-		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetGlossinessMap(pGlossinessTexture);*/
+			pTempEffect->SetGlossinessMap(pGlossinessTexture);
 	}
 }
