@@ -2,6 +2,7 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "Mesh.h"
+#include "Texture.h"
 #include "Utils.h"
 
 namespace dae
@@ -39,12 +40,15 @@ namespace dae
 		//Initialize vehicle mesh and textures
 		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx");
 
-		//...vehicle textures
+		m_pVehicle->SetDiffuseMap(Texture::LoadFromFile("Resources/vehicle_diffuse.png", m_pDevice));
+		m_pVehicle->SetNormalMap(Texture::LoadFromFile("Resources/vehicle_normal.png", m_pDevice));
+		m_pVehicle->SetSpecularMap(Texture::LoadFromFile("Resources/vehicle_specular.png", m_pDevice));
+		m_pVehicle->SetGlossinessMap(Texture::LoadFromFile("Resources/vehicle_gloss.png", m_pDevice));
 
 		//Initialize fireFX mesh and textures
 		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx");
 
-		//...fireFX textures
+		m_pFireFX->SetDiffuseMap(Texture::LoadFromFile("Resources/fireFX_diffuse.png", m_pDevice));
 
 		//Create Sampler State
 		InitializeSamplerState();
@@ -89,16 +93,11 @@ namespace dae
 			m_pFireFX->RotateY(m_MeshRotateSpeed * pTimer->GetElapsed());
 		}
 
-		//TODO: Fix Update Matrices functions
-		//Handle Updating Matrices
+		//Handle Updating Matrices - DirectX Only
 		if (m_IsUsingDirectX)
 		{
 			m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
 			m_pFireFX->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
-		}
-		else
-		{
-			m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
 		}
 	}
 

@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "Mesh.h"
+#include "Texture.h"
 //#include "Effect.h"
 //#include "EffectStandard.h"
 //#include "EffectTransparent.h"
-//#include "Texture.h"
 
 namespace dae
 {
@@ -51,6 +51,11 @@ namespace dae
 			m_pVertexBuffer->Release();
 
 		//delete m_pEffect;
+
+		delete m_pDiffuseTexture;
+		delete m_pNormalTexture;
+		delete m_pSpecularTexture;
+		delete m_pGlossinessTexture;
 	}
 
 	HRESULT Mesh::CreateLayouts(ID3D11Device* pDevice)
@@ -115,13 +120,13 @@ namespace dae
 		pDeviceContext->IASetIndexBuffer(m_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
 
 		//5. Draw
-		D3DX11_TECHNIQUE_DESC techDesc{};
+		/*D3DX11_TECHNIQUE_DESC techDesc{};
 		m_pTechnique->GetDesc(&techDesc);
 		for (UINT p{ 0 }; p < techDesc.Passes; ++p)
 		{
 			m_pTechnique->GetPassByIndex(p)->Apply(0, pDeviceContext);
 			pDeviceContext->DrawIndexed(m_NumIndices, 0, 0);
-		}
+		}*/
 	}
 	void Mesh::RenderSoftware() const
 	{
@@ -218,29 +223,45 @@ namespace dae
 		return m_ScaleMatrix * m_RotationMatrix * m_TranslationMatrix;
 	}
 
-	/*void Mesh::SetDiffuseMap(Texture* pDiffuseTexture)
+	void Mesh::SetDiffuseMap(Texture* pDiffuseTexture)
 	{
-		m_pEffect->SetDiffuseMap(pDiffuseTexture);
+		//Make sure the previous texture is deleted
+		delete m_pDiffuseTexture;
+		m_pDiffuseTexture = pDiffuseTexture;
+
+		//m_pEffect->SetDiffuseMap(pDiffuseTexture);
 	}
 	void Mesh::SetNormalMap(Texture* pNormalTexture)
 	{
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		//Make sure the previous texture is deleted
+		delete m_pNormalTexture;
+		m_pNormalTexture = pNormalTexture;
+
+		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetNormalMap(pNormalTexture);
+			pTempEffect->SetNormalMap(pNormalTexture);*/
 	}
 	void Mesh::SetSpecularMap(Texture* pSpecularTexture)
 	{
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		//Make sure the previous texture is deleted
+		delete m_pSpecularTexture;
+		m_pSpecularTexture = pSpecularTexture;
+
+		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetSpecularMap(pSpecularTexture);
+			pTempEffect->SetSpecularMap(pSpecularTexture);*/
 	}
 	void Mesh::SetGlossinessMap(Texture* pGlossinessTexture)
 	{
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		//Make sure the previous texture is deleted
+		delete m_pGlossinessTexture;
+		m_pGlossinessTexture = pGlossinessTexture;
+
+		/*EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
-			pTempEffect->SetGlossinessMap(pGlossinessTexture);
-	}*/
+			pTempEffect->SetGlossinessMap(pGlossinessTexture);*/
+	}
 }

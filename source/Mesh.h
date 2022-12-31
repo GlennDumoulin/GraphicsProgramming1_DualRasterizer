@@ -2,8 +2,8 @@
 
 namespace dae
 {
+	class Texture;
 	//class Effect;
-	//class Texture;
 
 	class Mesh final
 	{
@@ -29,10 +29,10 @@ namespace dae
 
 		void UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix);
 		
-		/*void SetDiffuseMap(Texture* pDiffuseTexture);
+		void SetDiffuseMap(Texture* pDiffuseTexture);
 		void SetNormalMap(Texture* pNormalTexture);
 		void SetSpecularMap(Texture* pSpecularTexture);
-		void SetGlossinessMap(Texture* pGlossinessTexture);*/
+		void SetGlossinessMap(Texture* pGlossinessTexture);
 
 		PrimitiveTopology GetPrimitiveTopology() const
 		{
@@ -70,5 +70,10 @@ namespace dae
 		std::vector<Vertex> m_Vertices{};
 		std::vector<VertexOut> m_VerticesOut{};
 		std::vector<uint32_t> m_Indices{};
+
+		Texture* m_pDiffuseTexture{};
+		Texture* m_pNormalTexture{};
+		Texture* m_pSpecularTexture{};
+		Texture* m_pGlossinessTexture{};
 	};
 }

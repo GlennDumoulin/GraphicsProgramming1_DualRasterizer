@@ -7,6 +7,7 @@ namespace dae
 {
 	class Camera;
 	class Mesh;
+	class Texture;
 
 	class Renderer final
 	{
@@ -97,8 +98,8 @@ namespace dae
 		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One);
 
 		//Software
-		SDL_Surface* m_pFrontBuffer{ nullptr };
-		SDL_Surface* m_pBackBuffer{ nullptr };
+		SDL_Surface* m_pFrontBuffer{};
+		SDL_Surface* m_pBackBuffer{};
 		uint32_t* m_pBackBufferPixels{};
 
 		float* m_pDepthBufferPixels{};
