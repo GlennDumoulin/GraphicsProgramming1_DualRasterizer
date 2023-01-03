@@ -37,7 +37,7 @@ namespace dae
 		m_pCamera = new Camera{};
 		m_pCamera->Initialize(static_cast<float>(m_Width) / m_Height, 45.f);
 
-		//Cache meshes translation
+		//Cache meshes info
 		const Vector3 translation{ 0.f, 0.f, 50.f };
 
 		//Initialize vehicle mesh and textures
@@ -56,12 +56,16 @@ namespace dae
 		//Create Sampler State
 		InitializeSamplerState();
 
+		//Create Rasterizer State
+		InitializeRasterizerState();
+
 		//Print settings to console
 		PrintSettings();
 	}
 	Renderer::~Renderer()
 	{
 		//DirectX
+		if (m_pRasterizerState) m_pRasterizerState->Release();
 		if (m_pSamplerState) m_pSamplerState->Release();
 		if (m_pRenderTargetView) m_pRenderTargetView->Release();
 		if (m_pRenderTargetBuffer) m_pRenderTargetBuffer->Release();
@@ -87,7 +91,7 @@ namespace dae
 
 	void Renderer::Update(const Timer* pTimer)
 	{
-		m_pCamera->Update(pTimer);
+		m_pCamera->Update(pTimer, m_IsUsingDirectX);
 
 		//Handle Mesh Rotation
 		if (m_ShouldRotate)
@@ -96,11 +100,16 @@ namespace dae
 			m_pFireFX->RotateY(m_MeshRotateSpeed * pTimer->GetElapsed());
 		}
 
-		//Handle Updating Matrices - DirectX Only
-		if (m_IsUsingDirectX)
+		//Handle Updating Matrices
+		m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
+		
+		if (m_IsUsingDirectX) //Update FireFx Matrices - DirectX Only
 		{
-			m_pVehicle->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
 			m_pFireFX->UpdateMatrices(m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetInvViewMatrix());
+		}
+		else //Transform Vertices - Software Only
+		{
+			m_pVehicle->VertexTransformationFunction(m_Width, m_Height, m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix());
 		}
 	}
 
@@ -155,7 +164,20 @@ namespace dae
 		SDL_LockSurface(m_pBackBuffer);
 
 		//Render Mesh
-		m_pVehicle->RenderSoftware();
+		SoftwareRenderingInfo SRInfo{
+			Int2{ m_Width, m_Height },
+			m_pBackBuffer,
+			m_pBackBufferPixels,
+			m_pDepthBufferPixels,
+			m_ShadingMode,
+			m_IsUsingNormalMap,
+		};
+
+		//Set Software Rendering State
+		if (m_ShouldShowBoundingBox) { SRInfo.SRState = SoftwareRenderingState::BOUNDING_BOXES; }
+		else if (m_ShouldShowDepthBuffer) { SRInfo.SRState = SoftwareRenderingState::DEPTH_BUFFER; }
+
+		m_pVehicle->RenderSoftware(SRInfo);
 
 		//Update SDL Surface
 		SDL_UnlockSurface(m_pBackBuffer);
@@ -183,6 +205,47 @@ namespace dae
 		pMesh->SetScale(scale);
 
 		return pMesh;
+	}
+
+	void Renderer::InitializeRasterizerState()
+	{
+		m_RasterizerDesc.FillMode = D3D11_FILL_SOLID;
+		m_RasterizerDesc.FrontCounterClockwise = false;
+		m_RasterizerDesc.DepthBias = 0;
+		m_RasterizerDesc.SlopeScaledDepthBias = 0.f;
+		m_RasterizerDesc.DepthBiasClamp = 0.f;
+		m_RasterizerDesc.DepthClipEnable = true;
+		m_RasterizerDesc.ScissorEnable = false;
+		m_RasterizerDesc.MultisampleEnable = false;
+		m_RasterizerDesc.AntialiasedLineEnable = false;
+
+		SetRasterizerState();
+	}
+	void Renderer::SetRasterizerState()
+	{
+		switch (m_CullMode)
+		{
+		case CullMode::BACK:
+			m_RasterizerDesc.CullMode = D3D11_CULL_BACK;
+			break;
+
+		case CullMode::FRONT:
+			m_RasterizerDesc.CullMode = D3D11_CULL_FRONT;
+			break;
+
+		case CullMode::NONE:
+			m_RasterizerDesc.CullMode = D3D11_CULL_NONE;
+			break;
+		}
+
+		if (m_pRasterizerState)
+			m_pRasterizerState->Release();
+
+		HRESULT result{ m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &m_pRasterizerState) };
+		if (FAILED(result))
+			return;
+
+		m_pVehicle->SetRasterizerState(m_pRasterizerState, m_CullMode);
 	}
 
 #pragma region Software Functions
@@ -492,6 +555,8 @@ namespace dae
 			std::cout << "None\n";
 			break;
 		}
+
+		SetRasterizerState();
 	}
 #pragma endregion
 

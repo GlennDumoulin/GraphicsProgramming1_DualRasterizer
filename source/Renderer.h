@@ -97,6 +97,9 @@ namespace dae
 
 		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One);
 
+		void InitializeRasterizerState();
+		void SetRasterizerState();
+
 		//Software
 		SDL_Surface* m_pFrontBuffer{};
 		SDL_Surface* m_pBackBuffer{};
@@ -116,8 +119,10 @@ namespace dae
 		ID3D11Resource* m_pRenderTargetBuffer{};
 		ID3D11RenderTargetView* m_pRenderTargetView{};
 		ID3D11SamplerState* m_pSamplerState{};
+		ID3D11RasterizerState* m_pRasterizerState{};
 
 		D3D11_SAMPLER_DESC m_SamplerDesc{};
+		D3D11_RASTERIZER_DESC m_RasterizerDesc{};
 
 		HRESULT InitializeDirectX();
 		void InitializeSamplerState();

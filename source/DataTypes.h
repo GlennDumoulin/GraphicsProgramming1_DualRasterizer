@@ -38,6 +38,13 @@ namespace dae
 		TRANSPARENCY,
 	};
 
+	enum class SoftwareRenderingState
+	{
+		DEFAULT,
+		BOUNDING_BOXES,
+		DEPTH_BUFFER
+	};
+
 	//Structs
 	struct Vertex
 	{
@@ -55,5 +62,16 @@ namespace dae
 		Vector3 normal{};
 		Vector3 tangent{};
 		Vector3 viewDirection{};
+	};
+
+	struct SoftwareRenderingInfo
+	{
+		Int2 screenSize{};
+		SDL_Surface* pBackBuffer{};
+		uint32_t* pBackBufferPixels{};
+		float* pDepthBufferPixels{};
+		ShadingMode shadingMode{};
+		bool isUsingNormalMap{};
+		SoftwareRenderingState SRState{ SoftwareRenderingState::DEFAULT };
 	};
 }

@@ -22,7 +22,7 @@ namespace dae
 			m_Origin = _origin;
 		}
 
-		void Update(const Timer* pTimer)
+		void Update(const Timer* pTimer, bool isUsingDirectX)
 		{
 			const float deltaTime = pTimer->GetElapsed();
 
@@ -41,8 +41,8 @@ namespace dae
 			const float currentSpeedMultiplier{ (pKeyboardState[SDL_SCANCODE_LSHIFT] || pKeyboardState[SDL_SCANCODE_RSHIFT]) ? m_SpeedMultiplier : 1.f };
 
 			const float currentKeyboardMoveSpeed{ m_KeyboardMoveSpeed * currentSpeedMultiplier * deltaTime };
-			const float currentMouseMoveSpeed{ m_MouseMoveSpeed * currentSpeedMultiplier * deltaTime };
-			const float currentRotateSpeed{ m_RotateSpeed * currentSpeedMultiplier * deltaTime };
+			const float currentMouseMoveSpeed{ ((isUsingDirectX) ? m_DirectXMouseMoveSpeed : m_SoftwareMouseMoveSpeed) * currentSpeedMultiplier * deltaTime };
+			const float currentRotateSpeed{ ((isUsingDirectX) ? m_DirectXRotateSpeed : m_SoftwareRotateSpeed) * currentSpeedMultiplier * deltaTime };
 
 			const bool lmb{ mouseState == SDL_BUTTON_LMASK }; //left mouse button
 			const bool rmb{ mouseState == SDL_BUTTON_RMASK }; //right mouse button
@@ -84,7 +84,7 @@ namespace dae
 			m_TotalPitch = std::clamp(m_TotalPitch, -89.99f * TO_RADIANS, 89.99f * TO_RADIANS);
 
 			//update forward vector
-			const Matrix finalRotation{ Matrix::CreateRotationX(m_TotalPitch) * Matrix::CreateRotationY(m_TotalYaw) };
+			const Matrix finalRotation{ Matrix::CreateRotation(m_TotalPitch, m_TotalYaw, 0.f) };
 
 			m_Forward = finalRotation.TransformVector(Vector3::UnitZ);
 
@@ -107,14 +107,14 @@ namespace dae
 
 	private:
 		Vector3 m_Origin{};
-		float m_FovAngle{90.f};
+		float m_FovAngle{ 90.f };
 		float m_FovTan{ 1.f };
 		const float m_MinFov{ 30.f };
 		const float m_MaxFov{ 120.f };
 
-		Vector3 m_Forward{Vector3::UnitZ};
-		Vector3 m_Up{Vector3::UnitY};
-		Vector3 m_Right{Vector3::UnitX};
+		Vector3 m_Forward{ Vector3::UnitZ };
+		Vector3 m_Up{ Vector3::UnitY };
+		Vector3 m_Right{ Vector3::UnitX };
 
 		float m_TotalPitch{ 0.f };
 		float m_TotalYaw{ 0.f };
@@ -129,8 +129,10 @@ namespace dae
 		float m_AspectRatio{};
 
 		const float m_KeyboardMoveSpeed{ 10.f };
-		const float m_MouseMoveSpeed{ 5.f };
-		const float m_RotateSpeed{ 360.f * TO_RADIANS };
+		const float m_DirectXMouseMoveSpeed{ 60.f };
+		const float m_SoftwareMouseMoveSpeed{ 5.f };
+		const float m_DirectXRotateSpeed{ 360.f * TO_RADIANS };
+		const float m_SoftwareRotateSpeed{ 20.f * TO_RADIANS };
 		const int m_SpeedMultiplier{ 4 };
 
 		void CalculateViewMatrix()

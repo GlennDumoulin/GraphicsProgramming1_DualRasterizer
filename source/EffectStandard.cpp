@@ -17,6 +17,7 @@ namespace dae
 		if (m_pNormalMapVariable) m_pNormalMapVariable->Release();
 		if (m_pMatViewInverseVariable) m_pMatViewInverseVariable->Release();
 		if (m_pMatWorldVariable) m_pMatWorldVariable->Release();
+		if (m_pRasterizerVariable) m_pRasterizerVariable->Release();
 	}
 
 	void EffectStandard::LoadEffectVariables()
@@ -29,6 +30,12 @@ namespace dae
 		if (!m_pSamplerVariable->IsValid())
 		{
 			std::wcout << L"m_pSamplerVariable not valid!";
+		}
+
+		m_pRasterizerVariable = m_pEffect->GetVariableByName("gRasterizer")->AsRasterizer();
+		if (!m_pRasterizerVariable->IsValid())
+		{
+			std::wcout << L"m_pRasterizerVariable not valid!";
 		}
 
 		m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
@@ -114,6 +121,11 @@ namespace dae
 		};
 
 		return result;
+	}
+
+	void EffectStandard::SetRasterizerState(ID3D11RasterizerState* pRasterizerState)
+	{
+		m_pRasterizerVariable->SetRasterizerState(0, pRasterizerState);
 	}
 
 	void EffectStandard::SetWorldMatrix(const Matrix& matrix)

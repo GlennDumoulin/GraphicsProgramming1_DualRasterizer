@@ -65,4 +65,11 @@ namespace dae
 		if (v > 1.f) return 1.f;
 		return v;
 	}
+
+	inline int Sign(const int v)
+	{
+		if (v < 0) return -1;
+		if (v > 0) return 1;
+		return 0;
+	}
 }

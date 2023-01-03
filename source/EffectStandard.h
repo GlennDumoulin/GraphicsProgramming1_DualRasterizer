@@ -18,6 +18,8 @@ namespace dae
 
 		virtual HRESULT LoadInputLayout(ID3D11Device* pDevice, ID3D11InputLayout** ppInputLayout) override;
 
+		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState);
+
 		void SetWorldMatrix(const Matrix& matrix);
 		void SetViewInverseMatrix(const Matrix& matrix);
 
@@ -26,6 +28,8 @@ namespace dae
 		void SetGlossinessMap(Texture* pGlossinessTexture);
 
 	private:
+		ID3DX11EffectRasterizerVariable* m_pRasterizerVariable{};
+
 		ID3DX11EffectMatrixVariable* m_pMatWorldVariable{};
 		ID3DX11EffectMatrixVariable* m_pMatViewInverseVariable{};
 

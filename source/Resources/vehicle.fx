@@ -20,11 +20,7 @@ Texture2D gGlossinessMap : GlossinessMap;
 
 SamplerState gSampler : Sampler;
 
-RasterizerState gRasterizerState
-{
-	CullMode = back;
-	FrontCounterClockwise = false; //default
-};
+RasterizerState gRasterizer : Rasterizer;
 
 BlendState gBlendState
 {
@@ -147,7 +143,7 @@ technique11 DefaultTechnique
 {
 	pass P0
 	{
-		SetRasterizerState(gRasterizerState);
+		SetRasterizerState(gRasterizer);
 		SetDepthStencilState(gDepthStencilState, 0);
 		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
 		SetVertexShader(CompileShader(vs_5_0, VS()));

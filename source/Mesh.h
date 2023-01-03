@@ -17,7 +17,7 @@ namespace dae
 		Mesh& operator=(Mesh&&) noexcept = delete;
 
 		void RenderDirectX(ID3D11DeviceContext* pDeviceContext) const;
-		void RenderSoftware() const;
+		void RenderSoftware(SoftwareRenderingInfo& SRInfo) const;
 
 		void SetTranslation(const Vector3& translation);
 		void SetRotation(const Vector3& rotation);
@@ -26,8 +26,10 @@ namespace dae
 		void RotateY(const float degAngle);
 
 		void SetSampler(ID3D11SamplerState* pSampler);
+		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState, CullMode& cullMode);
 
 		void UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix);
+		void VertexTransformationFunction(const int width, const int height, const Matrix& viewMatrix, const Matrix& projMatrix);
 		
 		void SetDiffuseMap(Texture* pDiffuseTexture);
 		void SetNormalMap(Texture* pNormalTexture);
@@ -68,12 +70,21 @@ namespace dae
 
 		//Software
 		std::vector<Vertex> m_Vertices{};
-		std::vector<VertexOut> m_VerticesOut{};
 		std::vector<uint32_t> m_Indices{};
+		
+		std::vector<Vector2> m_VerticesScreenSpace{};
+		std::vector<VertexOut> m_VerticesOut{};
 
 		Texture* m_pDiffuseTexture{};
 		Texture* m_pNormalTexture{};
 		Texture* m_pSpecularTexture{};
 		Texture* m_pGlossinessTexture{};
+
+		CullMode m_CullMode{};
+
+		void RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, bool shouldSwapVertices = false) const;
+		bool IsVerticeInFrustum(const VertexOut& vertice) const;
+		void PixelShading(const VertexOut& vertice, ColorRGB& finalColor, ShadingMode& shadingMode, bool isUsingNormalMap) const;
+		ColorRGB CalculateSpecularColor(const Vector3& sampledNormal, const Vector3& lightDirection, const VertexOut& vertice, const float shininess) const;
 	};
 }
