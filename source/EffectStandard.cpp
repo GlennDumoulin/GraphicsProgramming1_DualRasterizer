@@ -17,7 +17,6 @@ namespace dae
 		if (m_pNormalMapVariable) m_pNormalMapVariable->Release();
 		if (m_pMatViewInverseVariable) m_pMatViewInverseVariable->Release();
 		if (m_pMatWorldVariable) m_pMatWorldVariable->Release();
-		if (m_pRasterizerVariable) m_pRasterizerVariable->Release();
 	}
 
 	void EffectStandard::LoadEffectVariables()
@@ -110,7 +109,7 @@ namespace dae
 		D3DX11_PASS_DESC passDesc{};
 		m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
 
-		HRESULT result{
+		const HRESULT result{
 			pDevice->CreateInputLayout(
 				vertexDesc,
 				numElements,
@@ -123,31 +122,26 @@ namespace dae
 		return result;
 	}
 
-	void EffectStandard::SetRasterizerState(ID3D11RasterizerState* pRasterizerState)
-	{
-		m_pRasterizerVariable->SetRasterizerState(0, pRasterizerState);
-	}
-
-	void EffectStandard::SetWorldMatrix(const Matrix& matrix)
+	void EffectStandard::SetWorldMatrix(const Matrix& matrix) const
 	{
 		m_pMatWorldVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
 	}
-	void EffectStandard::SetViewInverseMatrix(const Matrix& matrix)
+	void EffectStandard::SetViewInverseMatrix(const Matrix& matrix) const
 	{
 		m_pMatViewInverseVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
 	}
 
-	void EffectStandard::SetNormalMap(Texture* pNormalTexture)
+	void EffectStandard::SetNormalMap(const Texture* pNormalTexture) const
 	{
 		if (m_pNormalMapVariable)
 			m_pNormalMapVariable->SetResource(pNormalTexture->GetSRV());
 	}
-	void EffectStandard::SetSpecularMap(Texture* pSpecularTexture)
+	void EffectStandard::SetSpecularMap(const Texture* pSpecularTexture) const
 	{
 		if (m_pSpecularMapVariable)
 			m_pSpecularMapVariable->SetResource(pSpecularTexture->GetSRV());
 	}
-	void EffectStandard::SetGlossinessMap(Texture* pGlossinessTexture)
+	void EffectStandard::SetGlossinessMap(const Texture* pGlossinessTexture) const
 	{
 		if (m_pGlossinessMapVariable)
 			m_pGlossinessMapVariable->SetResource(pGlossinessTexture->GetSRV());

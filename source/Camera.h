@@ -7,7 +7,7 @@ namespace dae
 	{
 	public:
 		Camera() = default;
-		Camera(const Vector3& _origin, float _fovAngle):
+		Camera(const Vector3& _origin, const float _fovAngle):
 			m_Origin{_origin}
 		{
 			ChangeFov(_fovAngle);
@@ -22,7 +22,7 @@ namespace dae
 			m_Origin = _origin;
 		}
 
-		void Update(const Timer* pTimer, bool isUsingDirectX)
+		void Update(const Timer* pTimer, const bool isUsingDirectX)
 		{
 			const float deltaTime = pTimer->GetElapsed();
 
@@ -42,7 +42,7 @@ namespace dae
 
 			const float currentKeyboardMoveSpeed{ m_KeyboardMoveSpeed * currentSpeedMultiplier * deltaTime };
 			const float currentMouseMoveSpeed{ ((isUsingDirectX) ? m_DirectXMouseMoveSpeed : m_SoftwareMouseMoveSpeed) * currentSpeedMultiplier * deltaTime };
-			const float currentRotateSpeed{ ((isUsingDirectX) ? m_DirectXRotateSpeed : m_SoftwareRotateSpeed) * currentSpeedMultiplier * deltaTime };
+			const float currentRotateSpeed{ m_RotateSpeed * currentSpeedMultiplier };
 
 			const bool lmb{ mouseState == SDL_BUTTON_LMASK }; //left mouse button
 			const bool rmb{ mouseState == SDL_BUTTON_RMASK }; //right mouse button
@@ -72,15 +72,18 @@ namespace dae
 			m_Origin -= m_Up * pKeyboardState[SDL_SCANCODE_Q] * currentKeyboardMoveSpeed;
 
 			//mouse controls
+			const float fltMouseX{ static_cast<float>(mouseX) };
+			const float fltMouseY{ static_cast<float>(mouseY) };
+
 			//mouse movement
-			m_Origin -= m_Forward * (lmb * mouseY * currentMouseMoveSpeed);
-			m_Origin += m_Right * (lrmb * mouseX * currentMouseMoveSpeed);
-			m_Origin -= m_Up * (lrmb * mouseY * currentMouseMoveSpeed);
+			m_Origin -= m_Forward * (static_cast<float>(lmb) * fltMouseY * currentMouseMoveSpeed);
+			m_Origin += m_Right * (static_cast<float>(lrmb) * fltMouseX * currentMouseMoveSpeed);
+			m_Origin -= m_Up * (static_cast<float>(lrmb) * fltMouseY * currentMouseMoveSpeed);
 
 			//mouse rotation
-			m_TotalYaw += lmb * mouseX * currentRotateSpeed;
-			m_TotalYaw += rmb * mouseX * currentRotateSpeed;
-			m_TotalPitch -= rmb * mouseY * currentRotateSpeed;
+			m_TotalYaw += static_cast<float>(lmb) * fltMouseX * currentRotateSpeed;
+			m_TotalYaw += static_cast<float>(rmb) * fltMouseX * currentRotateSpeed;
+			m_TotalPitch -= static_cast<float>(rmb) * fltMouseY * currentRotateSpeed;
 			m_TotalPitch = std::clamp(m_TotalPitch, -89.99f * TO_RADIANS, 89.99f * TO_RADIANS);
 
 			//update forward vector
@@ -103,6 +106,11 @@ namespace dae
 		Matrix& GetProjectionMatrix()
 		{
 			return m_ProjectionMatrix;
+		}
+
+		Vector3& GetPosition()
+		{
+			return m_Origin;
 		}
 
 	private:
@@ -131,9 +139,8 @@ namespace dae
 		const float m_KeyboardMoveSpeed{ 10.f };
 		const float m_DirectXMouseMoveSpeed{ 60.f };
 		const float m_SoftwareMouseMoveSpeed{ 5.f };
-		const float m_DirectXRotateSpeed{ 360.f * TO_RADIANS };
-		const float m_SoftwareRotateSpeed{ 20.f * TO_RADIANS };
-		const int m_SpeedMultiplier{ 4 };
+		const float m_RotateSpeed{ .2f * TO_RADIANS };
+		const float m_SpeedMultiplier{ 4.f };
 
 		void CalculateViewMatrix()
 		{
@@ -153,7 +160,7 @@ namespace dae
 			m_ProjectionMatrix = Matrix::CreatePerspectiveFovLH(m_FovTan, m_AspectRatio, m_NearPlane, m_FarPlane);
 		}
 
-		void ChangeFov(float newAngle)
+		void ChangeFov(const float newAngle)
 		{
 			m_FovAngle = std::clamp(newAngle, m_MinFov, m_MaxFov);
 

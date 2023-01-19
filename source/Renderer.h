@@ -12,7 +12,7 @@ namespace dae
 	class Renderer final
 	{
 	public:
-		Renderer(SDL_Window* pWindow);
+		explicit Renderer(SDL_Window* pWindow);
 		~Renderer();
 
 		Renderer(const Renderer&) = delete;
@@ -20,7 +20,7 @@ namespace dae
 		Renderer& operator=(const Renderer&) = delete;
 		Renderer& operator=(Renderer&&) noexcept = delete;
 
-		void Update(const Timer* pTimer);
+		void Update(const Timer* pTimer) const;
 		void Render() const;
 
 		void PrintFPS(float fps) const;
@@ -90,12 +90,12 @@ namespace dae
 		CullMode m_CullMode{ CullMode::BACK }; //F9
 
 		void PrintSettings() const;
-		void ClearConsole() const;
+		static void ClearConsole();
 
 		void RenderDirectX() const;
 		void RenderSoftware() const;
 
-		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One);
+		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One) const;
 
 		void InitializeRasterizerState();
 		void SetRasterizerState();

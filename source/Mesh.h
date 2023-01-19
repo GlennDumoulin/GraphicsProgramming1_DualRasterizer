@@ -8,7 +8,7 @@ namespace dae
 	class Mesh final
 	{
 	public:
-		Mesh(ID3D11Device* pDevice, EffectType effectType, const std::wstring& effectFilename, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
+		Mesh(ID3D11Device* pDevice, const EffectType effectType, const std::wstring& effectFilename, const std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indices);
 		~Mesh();
 
 		Mesh(const Mesh&) = delete;
@@ -25,11 +25,11 @@ namespace dae
 		
 		void RotateY(const float degAngle);
 
-		void SetSampler(ID3D11SamplerState* pSampler);
-		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState, CullMode& cullMode);
+		void SetSampler(ID3D11SamplerState* pSampler) const;
+		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState, const CullMode cullMode);
 
-		void UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix);
-		void VertexTransformationFunction(const int width, const int height, const Matrix& viewMatrix, const Matrix& projMatrix);
+		void UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix) const;
+		void VertexTransformationFunction(const int width, const int height, const Matrix& viewMatrix, const Matrix& projMatrix, const Vector3& cameraPos);
 		
 		void SetDiffuseMap(Texture* pDiffuseTexture);
 		void SetNormalMap(Texture* pNormalTexture);
@@ -48,9 +48,9 @@ namespace dae
 
 		PrimitiveTopology m_PrimitiveTopology{ PrimitiveTopology::TRIANGLE_LIST };
 
-		void SetWorldViewProjMatrix(const Matrix& viewMatrix, const Matrix& projMatrix);
-		void SetWorldMatrix();
-		void SetViewInverseMatrix(const Matrix& viewInverseMatrix);
+		void SetWorldViewProjMatrix(const Matrix& viewMatrix, const Matrix& projMatrix) const;
+		void SetWorldMatrix() const;
+		void SetViewInverseMatrix(const Matrix& viewInverseMatrix) const;
 
 		Matrix GetWorldMatrix() const;
 
@@ -83,8 +83,8 @@ namespace dae
 		CullMode m_CullMode{};
 
 		void RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, bool shouldSwapVertices = false) const;
-		bool IsVerticeInFrustum(const VertexOut& vertice) const;
-		void PixelShading(const VertexOut& vertice, ColorRGB& finalColor, ShadingMode& shadingMode, bool isUsingNormalMap) const;
+		static bool IsVerticeInFrustum(const VertexOut& vertice);
+		void PixelShading(const VertexOut& vertice, ColorRGB& finalColor, const ShadingMode shadingMode, bool isUsingNormalMap) const;
 		ColorRGB CalculateSpecularColor(const Vector3& sampledNormal, const Vector3& lightDirection, const VertexOut& vertice, const float shininess) const;
 	};
 }

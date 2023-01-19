@@ -8,7 +8,7 @@ namespace dae {
 	const Vector2 Vector2::UnitY = Vector2{ 0, 1 };
 	const Vector2 Vector2::Zero = Vector2{ 0, 0 };
 
-	Vector2::Vector2(float _x, float _y) : x(_x), y(_y) {}
+	Vector2::Vector2(const float _x, const float _y) : x(_x), y(_y) {}
 
 
 	Vector2::Vector2(const Vector2& from, const Vector2& to) : x(to.x - from.x), y(to.y - from.y) {}
@@ -38,12 +38,12 @@ namespace dae {
 		return { x / m, y / m};
 	}
 
-	void Vector2::Clamp(float minX, float minY, float maxX, float maxY)
+	void Vector2::Clamp(const float minX, const float minY, const float maxX, const float maxY)
 	{
 		x = std::clamp(x, minX, maxX);
 		y = std::clamp(y, minY, maxY);
 	}
-	void Vector2::Clamp(float maxX, float maxY)
+	void Vector2::Clamp(const float maxX, const float maxY)
 	{
 		x = std::clamp(x, 0.f, maxX);
 		y = std::clamp(y, 0.f, maxY);
@@ -77,12 +77,12 @@ namespace dae {
 	}
 
 #pragma region Operator Overloads
-	Vector2 Vector2::operator*(float scale) const
+	Vector2 Vector2::operator*(const float scale) const
 	{
 		return { x * scale, y * scale };
 	}
 
-	Vector2 Vector2::operator/(float scale) const
+	Vector2 Vector2::operator/(const float scale) const
 	{
 		return { x / scale, y / scale };
 	}
@@ -102,14 +102,14 @@ namespace dae {
 		return { -x ,-y };
 	}
 
-	Vector2& Vector2::operator*=(float scale)
+	Vector2& Vector2::operator*=(const float scale)
 	{
 		x *= scale;
 		y *= scale;
 		return *this;
 	}
 
-	Vector2& Vector2::operator/=(float scale)
+	Vector2& Vector2::operator/=(const float scale)
 	{
 		x /= scale;
 		y /= scale;
@@ -130,13 +130,13 @@ namespace dae {
 		return *this;
 	}
 
-	float& Vector2::operator[](int index)
+	float& Vector2::operator[](const int index)
 	{
 		assert(index <= 1 && index >= 0);
 		return index == 0 ? x : y;
 	}
 
-	float Vector2::operator[](int index) const
+	float Vector2::operator[](const int index) const
 	{
 		assert(index <= 1 && index >= 0);
 		return index == 0 ? x : y;

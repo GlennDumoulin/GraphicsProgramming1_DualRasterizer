@@ -54,7 +54,7 @@ namespace dae
 	};
 
 	//Global Operators
-	inline Vector3 operator*(float scale, const Vector3& v)
+	inline Vector3 operator*(const float scale, const Vector3& v)
 	{
 		return { v.x * scale, v.y * scale, v.z * scale };
 	}

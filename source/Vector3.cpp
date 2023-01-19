@@ -13,7 +13,7 @@ namespace dae
 	const Vector3 Vector3::Zero = Vector3{ 0, 0, 0 };
 	const Vector3 Vector3::One = Vector3{ 1, 1, 1 };
 
-	Vector3::Vector3(float _x, float _y, float _z) : x(_x), y(_y), z(_z){}
+	Vector3::Vector3(const float _x, const float _y, const float _z) : x(_x), y(_y), z(_z){}
 
 	Vector3::Vector3(const Vector4& v) : x(v.x), y(v.y), z(v.z){}
 
@@ -90,12 +90,12 @@ namespace dae
 	}
 
 #pragma region Operator Overloads
-	Vector3 Vector3::operator*(float scale) const
+	Vector3 Vector3::operator*(const float scale) const
 	{
 		return { x * scale, y * scale, z * scale };
 	}
 
-	Vector3 Vector3::operator/(float scale) const
+	Vector3 Vector3::operator/(const float scale) const
 	{
 		return { x / scale, y / scale, z / scale };
 	}
@@ -115,7 +115,7 @@ namespace dae
 		return { -x ,-y,-z };
 	}
 
-	Vector3& Vector3::operator*=(float scale)
+	Vector3& Vector3::operator*=(const float scale)
 	{
 		x *= scale;
 		y *= scale;
@@ -123,7 +123,7 @@ namespace dae
 		return *this;
 	}
 
-	Vector3& Vector3::operator/=(float scale)
+	Vector3& Vector3::operator/=(const float scale)
 	{
 		x /= scale;
 		y /= scale;
@@ -147,7 +147,7 @@ namespace dae
 		return *this;
 	}
 
-	float& Vector3::operator[](int index)
+	float& Vector3::operator[](const int index)
 	{
 		assert(index <= 2 && index >= 0);
 
@@ -156,7 +156,7 @@ namespace dae
 		return z;
 	}
 
-	float Vector3::operator[](int index) const
+	float Vector3::operator[](const int index) const
 	{
 		assert(index <= 2 && index >= 0);
 

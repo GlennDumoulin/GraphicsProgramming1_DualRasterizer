@@ -34,7 +34,7 @@ namespace dae {
 		return TransformVector(v.x, v.y, v.z);
 	}
 
-	Vector3 Matrix::TransformVector(float x, float y, float z) const
+	Vector3 Matrix::TransformVector(const float x, const float y, const float z) const
 	{
 		return Vector3{
 			data[0].x * x + data[1].x * y + data[2].x * z,
@@ -48,7 +48,7 @@ namespace dae {
 		return TransformPoint(p.x, p.y, p.z);
 	}
 
-	Vector3 Matrix::TransformPoint(float x, float y, float z) const
+	Vector3 Matrix::TransformPoint(const float x, const float y, const float z) const
 	{
 		return Vector3{
 			data[0].x * x + data[1].x * y + data[2].x * z + data[3].x,
@@ -62,7 +62,7 @@ namespace dae {
 		return TransformPoint(p.x, p.y, p.z, p.w);
 	}
 
-	Vector4 Matrix::TransformPoint(float x, float y, float z, float w) const
+	Vector4 Matrix::TransformPoint(const float x, const float y, const float z, float w) const
 	{
 		return Vector4{
 			data[0].x * x + data[1].x * y + data[2].x * z + data[3].x,
@@ -150,7 +150,7 @@ namespace dae {
 		return {};
 	}
 
-	Matrix Matrix::CreatePerspectiveFovLH(float fov, float aspect, float zNear, float zFar)
+	Matrix Matrix::CreatePerspectiveFovLH(const float fov, const float aspect, const float zNear, const float zFar)
 	{
 		Matrix temp{
 			{ 1.f / (aspect * fov), 0.f, 0.f, 0.f },
@@ -192,7 +192,7 @@ namespace dae {
 		return { Vector3::UnitX, Vector3::UnitY, Vector3::UnitZ, t };
 	}
 
-	Matrix Matrix::CreateRotationX(float pitch)
+	Matrix Matrix::CreateRotationX(const float pitch)
 	{
 		return {
 			{1, 0, 0, 0},
@@ -202,7 +202,7 @@ namespace dae {
 		};
 	}
 
-	Matrix Matrix::CreateRotationY(float yaw)
+	Matrix Matrix::CreateRotationY(const float yaw)
 	{
 		return {
 			{cos(yaw), 0, -sin(yaw), 0},
@@ -212,7 +212,7 @@ namespace dae {
 		};
 	}
 
-	Matrix Matrix::CreateRotationZ(float roll)
+	Matrix Matrix::CreateRotationZ(const float roll)
 	{
 		return {
 			{cos(roll), sin(roll), 0, 0},
@@ -243,13 +243,13 @@ namespace dae {
 	}
 
 #pragma region Operator Overloads
-	Vector4& Matrix::operator[](int index)
+	Vector4& Matrix::operator[](const int index)
 	{
 		assert(index <= 3 && index >= 0);
 		return data[index];
 	}
 
-	Vector4 Matrix::operator[](int index) const
+	Vector4 Matrix::operator[](const int index) const
 	{
 		assert(index <= 3 && index >= 0);
 		return data[index];

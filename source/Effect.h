@@ -19,11 +19,12 @@ namespace dae
 
 		virtual HRESULT LoadInputLayout(ID3D11Device* pDevice, ID3D11InputLayout** ppInputLayout) = 0;
 
-		void SetSampler(ID3D11SamplerState* pSampler);
+		void SetSampler(ID3D11SamplerState* pSampler) const;
+		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState) const;
 
-		void SetWorldViewProjMatrix(const Matrix& matrix);
+		void SetWorldViewProjMatrix(const Matrix& matrix) const;
 
-		void SetDiffuseMap(Texture* pDiffuseTexture);
+		void SetDiffuseMap(const Texture* pDiffuseTexture) const;
 
 		ID3DX11Effect* GetEffect() const
 		{
@@ -38,6 +39,7 @@ namespace dae
 		ID3DX11Effect* m_pEffect{};
 		ID3DX11EffectTechnique* m_pTechnique{};
 		ID3DX11EffectSamplerVariable* m_pSamplerVariable{};
+		ID3DX11EffectRasterizerVariable* m_pRasterizerVariable{};
 
 		ID3DX11EffectMatrixVariable* m_pMatWorldViewProjVariable{};
 		

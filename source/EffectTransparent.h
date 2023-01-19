@@ -7,7 +7,7 @@ namespace dae
 	{
 	public:
 		EffectTransparent(ID3D11Device* pDevice, const std::wstring& assetFile);
-		~EffectTransparent();
+		~EffectTransparent() = default;
 
 		EffectTransparent(const EffectTransparent&) = delete;
 		EffectTransparent(EffectTransparent&&) noexcept = delete;

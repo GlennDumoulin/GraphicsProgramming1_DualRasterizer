@@ -9,9 +9,6 @@ namespace dae
 		//Get Effect Variables
 		LoadEffectVariables();
 	}
-	EffectTransparent::~EffectTransparent()
-	{
-	}
 
 	void EffectTransparent::LoadEffectVariables()
 	{
@@ -23,6 +20,12 @@ namespace dae
 		if (!m_pSamplerVariable->IsValid())
 		{
 			std::wcout << L"m_pSamplerVariable not valid!";
+		}
+
+		m_pRasterizerVariable = m_pEffect->GetVariableByName("gRasterizer")->AsRasterizer();
+		if (!m_pRasterizerVariable->IsValid())
+		{
+			std::wcout << L"m_pRasterizerVariable not valid!";
 		}
 
 		m_pMatWorldViewProjVariable = m_pEffect->GetVariableByName("gWorldViewProj")->AsMatrix();
@@ -57,7 +60,7 @@ namespace dae
 		D3DX11_PASS_DESC passDesc{};
 		m_pTechnique->GetPassByIndex(0)->GetDesc(&passDesc);
 
-		HRESULT result{
+		const HRESULT result{
 			pDevice->CreateInputLayout(
 				vertexDesc,
 				numElements,

@@ -7,7 +7,7 @@ Texture2D gDiffuseMap : DiffuseMap;
 
 SamplerState gSampler : Sampler;
 
-RasterizerState gRasterizerState
+RasterizerState gRasterizer
 {
 	CullMode = none;
 	FrontCounterClockwise = false; //default
@@ -88,7 +88,7 @@ technique11 DefaultTechnique
 {
 	pass P0
 	{
-		SetRasterizerState(gRasterizerState);
+		SetRasterizerState(gRasterizer);
 		SetDepthStencilState(gDepthStencilState, 0);
 		SetBlendState(gBlendState, float4(0.f, 0.f, 0.f, 0.f), 0xFFFFFFFF);
 		SetVertexShader(CompileShader(vs_5_0, VS()));

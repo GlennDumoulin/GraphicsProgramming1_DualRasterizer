@@ -44,7 +44,7 @@ namespace dae
 	};
 
 	//Global Operators
-	inline Vector2 operator*(float scale, const Vector2& v)
+	inline Vector2 operator*(const float scale, const Vector2& v)
 	{
 		return { v.x * scale, v.y * scale };
 	}

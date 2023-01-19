@@ -12,6 +12,7 @@ namespace dae
 	{
 		if (m_pDiffuseMapVariable) m_pDiffuseMapVariable->Release();
 		if (m_pMatWorldViewProjVariable) m_pMatWorldViewProjVariable->Release();
+		if (m_pRasterizerVariable) m_pRasterizerVariable->Release();
 		if (m_pSamplerVariable) m_pSamplerVariable->Release();
 		if (m_pTechnique) m_pTechnique->Release();
 		if (m_pEffect) m_pEffect->Release();
@@ -70,17 +71,21 @@ namespace dae
 		return pEffect;
 	}
 
-	void Effect::SetSampler(ID3D11SamplerState* pSampler)
+	void Effect::SetSampler(ID3D11SamplerState* pSampler) const
 	{
 		m_pSamplerVariable->SetSampler(0, pSampler);
 	}
+	void Effect::SetRasterizerState(ID3D11RasterizerState* pRasterizerState) const
+	{
+		m_pRasterizerVariable->SetRasterizerState(0, pRasterizerState);
+	}
 
-	void Effect::SetWorldViewProjMatrix(const Matrix& matrix)
+	void Effect::SetWorldViewProjMatrix(const Matrix& matrix) const
 	{
 		m_pMatWorldViewProjVariable->SetMatrix(reinterpret_cast<const float*>(&matrix));
 	}
 
-	void Effect::SetDiffuseMap(Texture* pDiffuseTexture)
+	void Effect::SetDiffuseMap(const Texture* pDiffuseTexture) const
 	{
 		if (m_pDiffuseMapVariable)
 			m_pDiffuseMapVariable->SetResource(pDiffuseTexture->GetSRV());

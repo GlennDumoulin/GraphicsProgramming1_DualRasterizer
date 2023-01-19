@@ -19,11 +19,10 @@ namespace dae
 		m_pBackBuffer = SDL_CreateRGBSurface(0, m_Width, m_Height, 32, 0, 0, 0, 0);
 		m_pBackBufferPixels = static_cast<uint32_t*>(m_pBackBuffer->pixels);
 
-		m_pDepthBufferPixels = new float[m_Width * m_Height];
-
+		m_pDepthBufferPixels = new float[static_cast<unsigned long long>(m_Width * m_Height)];
+		
 		//Initialize DirectX pipeline
-		const HRESULT result = InitializeDirectX();
-		if (result == S_OK)
+		if (InitializeDirectX() == S_OK)
 		{
 			m_IsInitialized = true;
 			std::cout << "DirectX is initialized and ready!\n\n";
@@ -35,7 +34,7 @@ namespace dae
 
 		//Initialize Camera
 		m_pCamera = new Camera{};
-		m_pCamera->Initialize(static_cast<float>(m_Width) / m_Height, 45.f);
+		m_pCamera->Initialize(static_cast<float>(m_Width) / static_cast<float>(m_Height), 45.f);
 
 		//Cache meshes info
 		const Vector3 translation{ 0.f, 0.f, 50.f };
@@ -89,7 +88,7 @@ namespace dae
 		delete m_pFireFX;
 	}
 
-	void Renderer::Update(const Timer* pTimer)
+	void Renderer::Update(const Timer* pTimer) const
 	{
 		m_pCamera->Update(pTimer, m_IsUsingDirectX);
 
@@ -109,7 +108,7 @@ namespace dae
 		}
 		else //Transform Vertices - Software Only
 		{
-			m_pVehicle->VertexTransformationFunction(m_Width, m_Height, m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix());
+			m_pVehicle->VertexTransformationFunction(m_Width, m_Height, m_pCamera->GetViewMatrix(), m_pCamera->GetProjectionMatrix(), m_pCamera->GetPosition());
 		}
 	}
 
@@ -133,7 +132,7 @@ namespace dae
 			return;
 
 		//1. Clear RTV & DSV
-		ColorRGB clearColor{};
+		ColorRGB clearColor;
 		if (m_IsUsingUniformClearColor)
 		{
 			clearColor = m_UniformClearColor;
@@ -181,11 +180,11 @@ namespace dae
 
 		//Update SDL Surface
 		SDL_UnlockSurface(m_pBackBuffer);
-		SDL_BlitSurface(m_pBackBuffer, 0, m_pFrontBuffer, 0);
+		SDL_BlitSurface(m_pBackBuffer, nullptr, m_pFrontBuffer, nullptr);
 		SDL_UpdateWindowSurface(m_pWindow);
 	}
 
-	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation, const Vector3& rotation, const Vector3& scale)
+	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation, const Vector3& rotation, const Vector3& scale) const
 	{
 		Mesh* pMesh{};
 
@@ -198,7 +197,7 @@ namespace dae
 			return pMesh;
 		}
 
-		pMesh = new Mesh{ m_pDevice, effectType, effectFilename, vertices, indices };
+		pMesh = new Mesh{ m_pDevice, effectType, effectFilename, std::move(vertices), std::move(indices) };
 
 		pMesh->SetTranslation(translation);
 		pMesh->SetRotation(rotation);
@@ -241,17 +240,17 @@ namespace dae
 		if (m_pRasterizerState)
 			m_pRasterizerState->Release();
 
-		HRESULT result{ m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &m_pRasterizerState) };
+		const HRESULT result{ m_pDevice->CreateRasterizerState(&m_RasterizerDesc, &m_pRasterizerState) };
 		if (FAILED(result))
 			return;
-
+		
 		m_pVehicle->SetRasterizerState(m_pRasterizerState, m_CullMode);
 	}
 
 #pragma region Software Functions
 	inline void Renderer::ClearBackground() const
 	{
-		ColorRGB clearColor{};
+		ColorRGB clearColor;
 		if (m_IsUsingUniformClearColor)
 		{
 			clearColor = m_UniformClearColor;
@@ -260,7 +259,7 @@ namespace dae
 		{
 			clearColor = m_SoftwareClearColor;
 		}
-		SDL_FillRect(m_pBackBuffer, NULL, SDL_MapRGB(m_pBackBuffer->format,
+		SDL_FillRect(m_pBackBuffer, nullptr, SDL_MapRGB(m_pBackBuffer->format,
 			static_cast<uint8_t>(clearColor.r * 255),
 			static_cast<uint8_t>(clearColor.g * 255),
 			static_cast<uint8_t>(clearColor.b * 255))
@@ -420,7 +419,7 @@ namespace dae
 		if (m_pSamplerState)
 			m_pSamplerState->Release();
 
-		HRESULT result{ m_pDevice->CreateSamplerState(&m_SamplerDesc, &m_pSamplerState) };
+		const HRESULT result{ m_pDevice->CreateSamplerState(&m_SamplerDesc, &m_pSamplerState) };
 		if (FAILED(result))
 			return;
 
@@ -561,7 +560,7 @@ namespace dae
 #pragma endregion
 
 #pragma region Console Functions
-	void Renderer::PrintFPS(float fps) const
+	void Renderer::PrintFPS(const float fps) const
 	{
 		SetConsoleTextAttribute(m_hConsole, m_DefaultColor);
 		std::cout << "dFPS: " << fps << "\n";
@@ -890,7 +889,7 @@ namespace dae
 		std::cout << "  [C]\tPrint (Extra) Controls\n";
 		std::cout << "  [X]\tReset Console\n\n";
 	}
-	void Renderer::ClearConsole() const
+	void Renderer::ClearConsole()
 	{
 #if defined(_WIN32)
 		system("cls");

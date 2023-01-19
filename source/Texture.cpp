@@ -69,8 +69,8 @@ namespace dae
 	{
 		//Sample the correct texel for the given uv
 		//calculate current pixel to sample
-		const int x{ static_cast<int>(uv.x * m_pSurface->w) };
-		const int y{ static_cast<int>(uv.y * m_pSurface->h) };
+		const int x{ static_cast<int>(uv.x * static_cast<float>(m_pSurface->w)) };
+		const int y{ static_cast<int>(uv.y * static_cast<float>(m_pSurface->h)) };
 
 		const Uint32 pixelIdx{ m_pSurfacePixels[(y * m_pSurface->w) + x] };
 
@@ -82,7 +82,7 @@ namespace dae
 		SDL_GetRGB(pixelIdx, m_pSurface->format, &r, &g, &b);
 
 		//get RGB-values in [0, 1] range instead of [0, 255]
-		const float maxValue{ 255.f };
-		return ColorRGB{ r / maxValue, g / maxValue, b / maxValue };
+		constexpr float maxValue{ 255.f };
+		return ColorRGB{ static_cast<float>(r) / maxValue, static_cast<float>(g) / maxValue, static_cast<float>(b) / maxValue };
 	}
 }

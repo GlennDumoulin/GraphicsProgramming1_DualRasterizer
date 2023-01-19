@@ -7,7 +7,7 @@
 
 namespace dae
 {
-	Mesh::Mesh(ID3D11Device* pDevice, EffectType effectType, const std::wstring& effectFilename, const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices)
+	Mesh::Mesh(ID3D11Device* pDevice, const EffectType effectType, const std::wstring& effectFilename, const std::vector<Vertex>&& vertices, const std::vector<uint32_t>&& indices)
 		: m_EffectType{ effectType }
 		, m_Vertices{ vertices }
 		, m_Indices{ indices }
@@ -162,7 +162,7 @@ namespace dae
 		m_RotationMatrix = Matrix::CreateRotationY(degAngle * TO_RADIANS) * m_RotationMatrix;
 	}
 
-	void Mesh::UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix)
+	void Mesh::UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix) const
 	{
 		//Always update worldViewProj matrix
 		SetWorldViewProjMatrix(viewMatrix, projMatrix);
@@ -177,6 +177,8 @@ namespace dae
 
 			break;
 		}
+		default:
+			break;
 		}
 	}
 	Matrix Mesh::GetWorldMatrix() const
@@ -229,7 +231,7 @@ namespace dae
 		maxBoundingBox.Clamp(static_cast<float>(SRInfo.screenSize.x), static_cast<float>(SRInfo.screenSize.y));
 
 		//add small margin to bounding box
-		const int boxMargin{ 1 };
+		constexpr int boxMargin{ 1 };
 
 		const int minX{ std::clamp(static_cast<int>(minBoundingBox.x) - boxMargin, 0, SRInfo.screenSize.x) };
 		const int minY{ std::clamp(static_cast<int>(minBoundingBox.y) - boxMargin, 0, SRInfo.screenSize.y) };
@@ -245,7 +247,7 @@ namespace dae
 				//handle showing bounding boxes
 				if (SRInfo.SRState == SoftwareRenderingState::BOUNDING_BOXES)
 				{
-					const ColorRGB boundingBoxColor{ 1.f, 1.f, 1.f };
+					constexpr ColorRGB boundingBoxColor{ 1.f, 1.f, 1.f };
 
 					SRInfo.pBackBufferPixels[pixelIdx] = SDL_MapRGB(SRInfo.pBackBuffer->format,
 						static_cast<uint8_t>(boundingBoxColor.r * 255),
@@ -402,7 +404,7 @@ namespace dae
 
 					break;
 				}
-
+				
 				default:
 					break;
 				}
@@ -418,7 +420,7 @@ namespace dae
 		}
 	}
 
-	void Mesh::VertexTransformationFunction(const int width, const int height, const Matrix& viewMatrix, const Matrix& projMatrix)
+	void Mesh::VertexTransformationFunction(const int width, const int height, const Matrix& viewMatrix, const Matrix& projMatrix, const Vector3& cameraPos)
 	{
 		//clear out vertices vectors
 		m_VerticesOut.clear();
@@ -435,12 +437,16 @@ namespace dae
 		//transform each vertex using camera view matrix and perspective info
 		for (const Vertex& vertex : m_Vertices)
 		{
+			//Calculate view direction
+			Vector3 viewDirection{ worldMatrix.TransformPoint(vertex.position) -  cameraPos};
+			viewDirection.Normalize();
+
 			VertexOut temp{
 				Vector4{ worldViewProjMatrix.TransformPoint({ vertex.position, 1.f }) },
 				vertex.uv,
 				worldMatrix.TransformVector(vertex.normal).Normalized(),
 				worldMatrix.TransformVector(vertex.tangent).Normalized(),
-				worldViewProjMatrix.TransformPoint(vertex.viewDirection).Normalized()
+				viewDirection
 			};
 
 			temp.position.x /= temp.position.w;
@@ -454,14 +460,14 @@ namespace dae
 		for (const VertexOut& vertice : m_VerticesOut)
 		{
 			Vector2 temp{};
-			temp.x = ((vertice.position.x + 1) / 2) * width;
-			temp.y = ((1 - vertice.position.y) / 2) * height;
+			temp.x = ((vertice.position.x + 1) / 2) * static_cast<float>(width);
+			temp.y = ((1 - vertice.position.y) / 2) * static_cast<float>(height);
 
 			m_VerticesScreenSpace.emplace_back(temp);
 		}
 	}
 
-	bool Mesh::IsVerticeInFrustum(const VertexOut& vertice) const
+	bool Mesh::IsVerticeInFrustum(const VertexOut& vertice)
 	{
 		const Vector4 verticePos{ vertice.position };
 
@@ -481,15 +487,15 @@ namespace dae
 		return true;
 	}
 
-	void Mesh::PixelShading(const VertexOut& vertice, ColorRGB& finalColor, ShadingMode& shadingMode, bool isUsingNormalMap) const
+	void Mesh::PixelShading(const VertexOut& vertice, ColorRGB& finalColor, const ShadingMode shadingMode, const bool isUsingNormalMap) const
 	{
 		//shading info
 		const Vector3 lightDirection{ .577f, -.577f, .577f };
-		const float lightIntensity{ 7.f };
+		constexpr float lightIntensity{ 7.f };
 
-		const float kd{ 1.f };
-		const float shininess{ 25.f };
-		const ColorRGB ambientColor{ .025f, .025f, .025f };
+		constexpr float kd{ 1.f };
+		constexpr float shininess{ 25.f };
+		constexpr ColorRGB ambientColor{ .025f, .025f, .025f };
 
 		//calculate sampled normal
 		Vector3 sampledNormal{ vertice.normal };
@@ -566,34 +572,31 @@ namespace dae
 		m_ScaleMatrix = Matrix::CreateScale(scale);
 	}
 
-	void Mesh::SetSampler(ID3D11SamplerState* pSampler)
+	void Mesh::SetSampler(ID3D11SamplerState* pSampler) const
 	{
 		m_pEffect->SetSampler(pSampler);
 	}
-	void Mesh::SetRasterizerState(ID3D11RasterizerState* pRasterizerState, CullMode& cullMode)
+	void Mesh::SetRasterizerState(ID3D11RasterizerState* pRasterizerState, const CullMode cullMode)
 	{
 		m_CullMode = cullMode;
 
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
-
-		if (pTempEffect != nullptr)
-			pTempEffect->SetRasterizerState(pRasterizerState);
+		m_pEffect->SetRasterizerState(pRasterizerState);
 	}
 
-	void Mesh::SetWorldViewProjMatrix(const Matrix& viewMatrix, const Matrix& projMatrix)
+	void Mesh::SetWorldViewProjMatrix(const Matrix& viewMatrix, const Matrix& projMatrix) const
 	{
 		m_pEffect->SetWorldViewProjMatrix(GetWorldMatrix() * viewMatrix * projMatrix);
 	}
-	void Mesh::SetWorldMatrix()
+	void Mesh::SetWorldMatrix() const
 	{
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		const EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
 			pTempEffect->SetWorldMatrix(GetWorldMatrix());
 	}
-	void Mesh::SetViewInverseMatrix(const Matrix& viewInverseMatrix)
+	void Mesh::SetViewInverseMatrix(const Matrix& viewInverseMatrix) const
 	{
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		const EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
 			pTempEffect->SetViewInverseMatrix(viewInverseMatrix);
@@ -613,7 +616,7 @@ namespace dae
 		delete m_pNormalTexture;
 		m_pNormalTexture = pNormalTexture;
 
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		const EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
 			pTempEffect->SetNormalMap(pNormalTexture);
@@ -624,7 +627,7 @@ namespace dae
 		delete m_pSpecularTexture;
 		m_pSpecularTexture = pSpecularTexture;
 
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		const EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
 			pTempEffect->SetSpecularMap(pSpecularTexture);
@@ -635,7 +638,7 @@ namespace dae
 		delete m_pGlossinessTexture;
 		m_pGlossinessTexture = pGlossinessTexture;
 
-		EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
+		const EffectStandard* pTempEffect{ dynamic_cast<EffectStandard*>(m_pEffect) };
 
 		if (pTempEffect != nullptr)
 			pTempEffect->SetGlossinessMap(pGlossinessTexture);

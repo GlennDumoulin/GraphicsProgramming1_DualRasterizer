@@ -23,29 +23,29 @@ namespace dae
 	constexpr auto TO_RADIANS = (PI / 180.0f);
 
 	/* --- HELPER FUNCTIONS --- */
-	inline float Square(float a)
+	inline float Square(const float a)
 	{
 		return a * a;
 	}
 
-	inline float Lerpf(float a, float b, float factor)
+	inline float Lerpf(const float a, const float b, const float factor)
 	{
 		return ((1 - factor) * a) + (factor * b);
 	}
 
-	inline bool AreEqual(float a, float b, float epsilon = FLT_EPSILON)
+	inline bool AreEqual(const float a, const float b, const float epsilon = FLT_EPSILON)
 	{
 		return abs(a - b) < epsilon;
 	}
 
-	inline int Clamp(const int v, int min, int max)
+	inline int Clamp(const int v, const int min, const int max)
 	{
 		if (v < min) return min;
 		if (v > max) return max;
 		return v;
 	}
 
-	inline float Clamp(const float v, float min, float max)
+	inline float Clamp(const float v, const float min, const float max)
 	{
 		if (v < min) return min;
 		if (v > max) return max;

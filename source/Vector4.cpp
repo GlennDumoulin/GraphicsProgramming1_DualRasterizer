@@ -9,8 +9,8 @@
 
 namespace dae
 {
-	Vector4::Vector4(float _x, float _y, float _z, float _w) : x(_x), y(_y), z(_z), w(_w) {}
-	Vector4::Vector4(const Vector3& v, float _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
+	Vector4::Vector4(const float _x, const float _y, const float _z, const float _w) : x(_x), y(_y), z(_z), w(_w) {}
+	Vector4::Vector4(const Vector3& v, const float _w) : x(v.x), y(v.y), z(v.z), w(_w) {}
 
 	float Vector4::Magnitude() const
 	{
@@ -55,7 +55,7 @@ namespace dae
 	}
 
 #pragma region Operator Overloads
-	Vector4 Vector4::operator*(float scale) const
+	Vector4 Vector4::operator*(const float scale) const
 	{
 		return { x * scale, y * scale, z * scale, w * scale };
 	}
@@ -79,7 +79,7 @@ namespace dae
 		return *this;
 	}
 
-	float& Vector4::operator[](int index)
+	float& Vector4::operator[](const int index)
 	{
 		assert(index <= 3 && index >= 0);
 
@@ -89,7 +89,7 @@ namespace dae
 		return w;
 	}
 
-	float Vector4::operator[](int index) const
+	float Vector4::operator[](const int index) const
 	{
 		assert(index <= 3 && index >= 0);
 

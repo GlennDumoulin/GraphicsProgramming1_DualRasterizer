@@ -16,7 +16,7 @@ namespace dae
 				*this /= maxValue;
 		}
 
-		static ColorRGB Lerp(const ColorRGB& c1, const ColorRGB& c2, float factor)
+		static ColorRGB Lerp(const ColorRGB& c1, const ColorRGB& c2, const float factor)
 		{
 			return { Lerpf(c1.r, c2.r, factor), Lerpf(c1.g, c2.g, factor), Lerpf(c1.b, c2.b, factor) };
 		}
@@ -73,7 +73,7 @@ namespace dae
 			return *this;
 		}
 
-		const ColorRGB& operator*=(float s)
+		const ColorRGB& operator*=(const float s)
 		{
 			r *= s;
 			g *= s;
@@ -82,12 +82,12 @@ namespace dae
 			return *this;
 		}
 
-		ColorRGB operator*(float s) const
+		ColorRGB operator*(const float s) const
 		{
 			return { r * s, g * s,b * s };
 		}
 
-		const ColorRGB& operator/=(float s)
+		const ColorRGB& operator/=(const float s)
 		{
 			r /= s;
 			g /= s;
@@ -96,7 +96,7 @@ namespace dae
 			return *this;
 		}
 
-		ColorRGB operator/(float s) const
+		ColorRGB operator/(const float s) const
 		{
 			return { r / s, g / s,b / s };
 		}
@@ -104,7 +104,7 @@ namespace dae
 	};
 
 	//ColorRGB (Global) Operators
-	inline ColorRGB operator*(float s, const ColorRGB& c)
+	inline ColorRGB operator*(const float s, const ColorRGB& c)
 	{
 		return c * s;
 	}
