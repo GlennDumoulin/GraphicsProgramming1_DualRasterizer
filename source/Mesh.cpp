@@ -157,9 +157,16 @@ namespace dae
 		}
 	}
 
-	void Mesh::RotateY(const float degAngle)
+	void Mesh::InitializeTransform(const Vector3& translation, const Vector3& rotation, const Vector3& scale)
 	{
-		m_RotationMatrix = Matrix::CreateRotationY(degAngle * TO_RADIANS) * m_RotationMatrix;
+		SetTranslation(translation);
+		SetRotation(rotation);
+		SetScale(scale);
+	}
+
+	void Mesh::RotateY(const float angle)
+	{
+		m_RotationMatrix = Matrix::CreateRotationY(angle) * m_RotationMatrix;
 	}
 
 	void Mesh::UpdateMatrices(const Matrix& viewMatrix, const Matrix& projMatrix, const Matrix& viewInverseMatrix) const
@@ -187,7 +194,7 @@ namespace dae
 	}
 
 #pragma region Software Rendering
-	void Mesh::RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, bool shouldSwapVertices) const
+	void Mesh::RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, const bool shouldSwapVertices) const
 	{
 		//store the indexes of current triangle vertices
 		const size_t V0Idx{ m_Indices[idx] };
@@ -265,15 +272,13 @@ namespace dae
 				const Vector2 V1ToPixel{ currentPixel - V1Screen };
 				const Vector2 V2ToPixel{ currentPixel - V2Screen };
 
-				//check if pixel is to right of all edges
+				//check if pixel is to the right side of all edges
 				const float edge1Cross{ Vector2::Cross(edgeV0V1, V0ToPixel) };
-				if (edge1Cross < 0.f) continue;
-
 				const float edge2Cross{ Vector2::Cross(edgeV1V2, V1ToPixel) };
-				if (edge2Cross < 0.f) continue;
-
 				const float edge3Cross{ Vector2::Cross(edgeV2V0, V2ToPixel) };
-				if (edge3Cross < 0.f) continue;
+
+				if (!IsCrossCheckValid(edge1Cross, edge2Cross, edge3Cross))
+					continue;
 
 				//calculate barycentric weights
 				const float weightV0{ edge2Cross * invTriangleArea };
@@ -319,13 +324,7 @@ namespace dae
 				case SoftwareRenderingState::DEFAULT:
 				{
 					//create combined vertex out with triangle info
-					VertexOut combinedTriangleInfo{
-						{ static_cast<float>(px), static_cast<float>(py), 0.f, pixelDepth },
-						{},		//uv
-						{},		//normal
-						{},		//tangent
-						{}		//viewDirection
-					};
+					VertexOut combinedTriangleInfo{};
 
 					//calculate interpolated depth for current triangle
 					const float invInterpolatedDepthV0{ 1.f / V0NDC.position.w };
@@ -485,6 +484,31 @@ namespace dae
 
 		//if all values are valid, return true
 		return true;
+	}
+	bool Mesh::IsCrossCheckValid(const float edge1Cross, const float edge2Cross, const float edge3Cross) const
+	{
+		switch (m_CullMode)
+		{
+		case CullMode::BACK:
+		{
+			//Check if all results are positive
+			return (edge1Cross > 0.f && edge2Cross > 0.f && edge3Cross > 0.f);
+		}
+
+		case CullMode::FRONT:
+		{
+			//Check if all results are negative
+			return (edge1Cross < 0.f && edge2Cross < 0.f && edge3Cross < 0.f);
+		}
+
+		case CullMode::NONE:
+		{
+			//Check if all results are positive or all results are negative
+			return (edge1Cross > 0.f && edge2Cross > 0.f && edge3Cross > 0.f) || (edge1Cross < 0.f && edge2Cross < 0.f && edge3Cross < 0.f);
+		}
+		}
+
+		return false;
 	}
 
 	void Mesh::PixelShading(const VertexOut& vertice, ColorRGB& finalColor, const ShadingMode shadingMode, const bool isUsingNormalMap) const

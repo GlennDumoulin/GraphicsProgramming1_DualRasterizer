@@ -33,23 +33,24 @@ namespace dae
 		}
 
 		//Initialize Camera
-		m_pCamera = new Camera{};
-		m_pCamera->Initialize(static_cast<float>(m_Width) / static_cast<float>(m_Height), 45.f);
+		m_pCamera = new Camera{ static_cast<float>(m_Width) / static_cast<float>(m_Height), 45.f };
 
 		//Cache meshes info
 		const Vector3 translation{ 0.f, 0.f, 50.f };
 
-		//Initialize vehicle mesh and textures
-		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx", translation);
+		//Initialize vehicle mesh, transform and textures
+		m_pVehicle = InitializeMesh("Resources/vehicle.obj", EffectType::STANDARD, L"Resources/vehicle.fx");
+		m_pVehicle->InitializeTransform(translation);
 
 		m_pVehicle->SetDiffuseMap(Texture::LoadFromFile("Resources/vehicle_diffuse.png", m_pDevice));
 		m_pVehicle->SetNormalMap(Texture::LoadFromFile("Resources/vehicle_normal.png", m_pDevice));
 		m_pVehicle->SetSpecularMap(Texture::LoadFromFile("Resources/vehicle_specular.png", m_pDevice));
 		m_pVehicle->SetGlossinessMap(Texture::LoadFromFile("Resources/vehicle_gloss.png", m_pDevice));
 
-		//Initialize fireFX mesh and textures
-		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx", translation);
-
+		//Initialize fireFX mesh, transform and textures
+		m_pFireFX = InitializeMesh("Resources/fireFX.obj", EffectType::TRANSPARENCY, L"Resources/fireFX.fx");
+		m_pFireFX->InitializeTransform(translation);
+		
 		m_pFireFX->SetDiffuseMap(Texture::LoadFromFile("Resources/fireFX_diffuse.png", m_pDevice));
 
 		//Create Sampler State
@@ -184,7 +185,7 @@ namespace dae
 		SDL_UpdateWindowSurface(m_pWindow);
 	}
 
-	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation, const Vector3& rotation, const Vector3& scale) const
+	Mesh* Renderer::InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename) const
 	{
 		Mesh* pMesh{};
 
@@ -198,10 +199,6 @@ namespace dae
 		}
 
 		pMesh = new Mesh{ m_pDevice, effectType, effectFilename, std::move(vertices), std::move(indices) };
-
-		pMesh->SetTranslation(translation);
-		pMesh->SetRotation(rotation);
-		pMesh->SetScale(scale);
 
 		return pMesh;
 	}
@@ -577,6 +574,11 @@ namespace dae
 		std::cout << "  [LMB + Y]\t\tMove (Local) Forward/Backward\n";
 		std::cout << "  [LMB + RMB + Y]\tMove (World) Up/Down\n\n";
 
+		//Extra mouse controls
+		std::cout << "[EXTRA CONTROLS - MOUSE]\n";
+
+		std::cout << "  [LMB + RMB + X]\tMove (World) Left/Right\n\n";
+
 		//Keyboard controls
 		std::cout << "[CONTROLS - KEYBOARD]\n";
 
@@ -584,14 +586,14 @@ namespace dae
 		std::cout << "  [S|Arrow Down]\tMove (Local) Backward\n";
 		std::cout << "  [D|Arrow Right]\tMove (Local) Right\n";
 		std::cout << "  [A|Arrow Left]\tMove (Local) Left\n";
-		std::cout << "  [SHIFT]\t\tBoost Movement Speed\n\n";
+		std::cout << "  [LSHIFT|RSHIFT]\tBoost Movement Speed\n\n";
 
-		//Extra controls
+		//Extra keyboard controls
 		std::cout << "[EXTRA CONTROLS - KEYBOARD]\n";
 
 		std::cout << "  [E]\t\t\tMove (Local) Up\n";
 		std::cout << "  [Q]\t\t\tMove (Local) Down\n";
-		std::cout << "  [CTRL]\t\tHide Cursor\n";
+		std::cout << "  [LCTRL|RCTRL]\t\tHide Cursor\n";
 		std::cout << "  [,|.]\t\t\tChange FOV\n\n";
 	}
 	void Renderer::PrintSettings() const

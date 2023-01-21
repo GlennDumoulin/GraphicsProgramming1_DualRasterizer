@@ -70,7 +70,7 @@ namespace dae
 		Mesh* m_pVehicle{};
 		Mesh* m_pFireFX{};
 
-		const float m_MeshRotateSpeed{ 45.f };
+		const float m_MeshRotateSpeed{ 45.f * TO_RADIANS };
 
 		bool m_IsInitialized{ false };
 
@@ -95,7 +95,7 @@ namespace dae
 		void RenderDirectX() const;
 		void RenderSoftware() const;
 
-		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename, const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One) const;
+		Mesh* InitializeMesh(const std::string& filename, const EffectType& effectType, const std::wstring& effectFilename) const;
 
 		void InitializeRasterizerState();
 		void SetRasterizerState();

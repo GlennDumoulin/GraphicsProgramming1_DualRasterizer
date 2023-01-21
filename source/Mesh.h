@@ -19,11 +19,12 @@ namespace dae
 		void RenderDirectX(ID3D11DeviceContext* pDeviceContext) const;
 		void RenderSoftware(SoftwareRenderingInfo& SRInfo) const;
 
+		void InitializeTransform(const Vector3& translation = Vector3::Zero, const Vector3& rotation = Vector3::Zero, const Vector3& scale = Vector3::One);
 		void SetTranslation(const Vector3& translation);
 		void SetRotation(const Vector3& rotation);
 		void SetScale(const Vector3& scale);
 		
-		void RotateY(const float degAngle);
+		void RotateY(const float angle);
 
 		void SetSampler(ID3D11SamplerState* pSampler) const;
 		void SetRasterizerState(ID3D11RasterizerState* pRasterizerState, const CullMode cullMode);
@@ -82,9 +83,10 @@ namespace dae
 
 		CullMode m_CullMode{};
 
-		void RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, bool shouldSwapVertices = false) const;
+		void RenderTriangle(const size_t idx, SoftwareRenderingInfo& SRInfo, const bool shouldSwapVertices = false) const;
 		static bool IsVerticeInFrustum(const VertexOut& vertice);
-		void PixelShading(const VertexOut& vertice, ColorRGB& finalColor, const ShadingMode shadingMode, bool isUsingNormalMap) const;
+		bool IsCrossCheckValid(const float edge1Cross, const float edge2Cross, const float edge3Cross) const;
+		void PixelShading(const VertexOut& vertice, ColorRGB& finalColor, const ShadingMode shadingMode, const bool isUsingNormalMap) const;
 		ColorRGB CalculateSpecularColor(const Vector3& sampledNormal, const Vector3& lightDirection, const VertexOut& vertice, const float shininess) const;
 	};
 }

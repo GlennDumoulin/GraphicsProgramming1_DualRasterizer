@@ -7,19 +7,13 @@ namespace dae
 	{
 	public:
 		Camera() = default;
-		Camera(const Vector3& _origin, const float _fovAngle):
-			m_Origin{_origin}
+		explicit Camera(const float aspectRatio, const float fovAngle = 90.f, const Vector3& origin = { 0.f,0.f,0.f }, const float nearPlane = .1f, const float farPlane = 100.f)
+			: m_Origin{ origin }
+			, m_NearPlane{ nearPlane }
+			, m_FarPlane{ farPlane }
+			, m_AspectRatio{ aspectRatio }
 		{
-			ChangeFov(_fovAngle);
-		}
-
-		void Initialize(const float _aspectRatio, const float _fovAngle = 90.f, const Vector3& _origin = { 0.f,0.f,0.f })
-		{
-			m_AspectRatio = _aspectRatio;
-
-			ChangeFov(_fovAngle);
-
-			m_Origin = _origin;
+			ChangeFov(fovAngle);
 		}
 
 		void Update(const Timer* pTimer, const bool isUsingDirectX)
@@ -41,7 +35,7 @@ namespace dae
 			const float currentSpeedMultiplier{ (pKeyboardState[SDL_SCANCODE_LSHIFT] || pKeyboardState[SDL_SCANCODE_RSHIFT]) ? m_SpeedMultiplier : 1.f };
 
 			const float currentKeyboardMoveSpeed{ m_KeyboardMoveSpeed * currentSpeedMultiplier * deltaTime };
-			const float currentMouseMoveSpeed{ ((isUsingDirectX) ? m_DirectXMouseMoveSpeed : m_SoftwareMouseMoveSpeed) * currentSpeedMultiplier * deltaTime };
+			const float currentMouseMoveSpeed{ m_MouseMoveSpeed * currentSpeedMultiplier };
 			const float currentRotateSpeed{ m_RotateSpeed * currentSpeedMultiplier };
 
 			const bool lmb{ mouseState == SDL_BUTTON_LMASK }; //left mouse button
@@ -75,10 +69,12 @@ namespace dae
 			const float fltMouseX{ static_cast<float>(mouseX) };
 			const float fltMouseY{ static_cast<float>(mouseY) };
 
-			//mouse movement
+			//mouse movement - local
 			m_Origin -= m_Forward * (static_cast<float>(lmb) * fltMouseY * currentMouseMoveSpeed);
-			m_Origin += m_Right * (static_cast<float>(lrmb) * fltMouseX * currentMouseMoveSpeed);
-			m_Origin -= m_Up * (static_cast<float>(lrmb) * fltMouseY * currentMouseMoveSpeed);
+
+			//mouse movement - world
+			m_Origin += Vector3::UnitX * (static_cast<float>(lrmb) * fltMouseX * currentMouseMoveSpeed);
+			m_Origin -= Vector3::UnitY * (static_cast<float>(lrmb) * fltMouseY * currentMouseMoveSpeed);
 
 			//mouse rotation
 			m_TotalYaw += static_cast<float>(lmb) * fltMouseX * currentRotateSpeed;
@@ -136,9 +132,8 @@ namespace dae
 
 		float m_AspectRatio{};
 
-		const float m_KeyboardMoveSpeed{ 10.f };
-		const float m_DirectXMouseMoveSpeed{ 60.f };
-		const float m_SoftwareMouseMoveSpeed{ 5.f };
+		const float m_KeyboardMoveSpeed{ 20.f };
+		const float m_MouseMoveSpeed{ .05f };
 		const float m_RotateSpeed{ .2f * TO_RADIANS };
 		const float m_SpeedMultiplier{ 4.f };
 
